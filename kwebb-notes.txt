@@ -1,0 +1,41 @@
+File with some high level pointers, ideas, etc.  This info should be 
+reorganized as the project progresses.  Just keeping it simple for the 
+moment.
+
+* Project name: Mercury
+
+From Wikipedia:
+
+In Roman mythology, Mercury is the patron god of financial gain, 
+commerce, eloquence (and thus poetry), messages/communication (including 
+divination), travelers, boundaries, luck, trickery and thieves.
+
+* Possible pubsub candidate: The Emulab pubsub system
+
+The git repo is here:
+
+git@gitlab.flux.utah.edu:emulab/pubsub.git
+
+or via https:
+
+https://gitlab.flux.utah.edu/emulab/pubsub.git
+
+It turns out that the examples I was thinking of are all in the Emulab 
+code, and are more specific to the Elvin pubsub system (old pubsub used 
+before this one).  This pubsub has wrappers for providing an Elvin-like 
+interface, though I'm not sure those are of use to us.
+
+Generally, I don't know the details of this pubsub system in great 
+depth, but I know people we can talk to if the code here is not 
+illuminating.
+
+* Junguk provided a couple of pointers:
+
+- Apple's iBeacon (potentially related technology):
+
+https://developer.apple.com/ibeacon/
+https://developer.apple.com/ibeacon/Getting-Started-with-iBeacon.pdf
+
+- The mobile edge computing whitepaper.
+
+I've checked this in to the repository.
