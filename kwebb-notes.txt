@@ -39,3 +39,85 @@ https://developer.apple.com/ibeacon/Getting-Started-with-iBeacon.pdf
 - The mobile edge computing whitepaper.
 
 I've checked this in to the repository.
+
+* Vehicle Area Networks.
+
+Found a slide deck that gives an overview of vehicle area networks.
+Checked it in.  Some things in that deck:
+
+  - 802.11p: wireless access in vehicular environments (WAVE)
+  - keyword: ITS: Intelligent Transportation Systems
+
+* IEEE Transactions on Intelligent Transportation Systems
+
+http://ieeexplore.ieee.org/servlet/opac?punumber=6979
+
+=> Possibly relevant "popular" articles from this journal:
+
+- "A Practical Wireless Attack on the Connected Car and Security
+   Protocol for In-Vehicle CAN"
+  - http://ieeexplore.ieee.org/document/6894181/
+
+- "Dual Authentication and Key Management Techniques for Secure Data
+   Transmission in Vehicular Ad Hoc Networks"
+  - http://ieeexplore.ieee.org/document/7327222/
+
+- "ART: An Attack-Resistant Trust Management Scheme for Securing
+   Vehicular Ad Hoc Networks"
+  - http://ieeexplore.ieee.org/document/7328306/
+
+- "A Practical Security Architecture for In-Vehicle CAN-FD"
+  - http://ieeexplore.ieee.org/document/7435304/
+
+- "How to Utilize Interflow Network Coding in VANETs: A Backbone-Based
+  Approach"
+  - http://ieeexplore.ieee.org/document/7399741/
+
+- "A Multi-Hop Broadcast Protocol for Emergency Message Dissemination
+  in Urban Vehicular Ad Hoc Networks"
+  - http://ieeexplore.ieee.org/document/7299323/
+
+* Some articles on 802.11p:
+
+- "IEEE 802.11 p: Towards an international standard for wireless
+  access in vehicular environments"
+  - http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=4526014
+
+- "Performance evaluation of the IEEE 802.11 p WAVE communication standard"
+  - http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=4350110
+
+- "A tutorial survey on vehicular ad hoc networks"
+  - http://ieeexplore.ieee.org/document/4539481/?arnumber=4539481
+
+* Some other recent paper hits
+
+- "A multi-hop broadcast protocol for emergency message dissemination
+  in urban vehicular ad hoc networks"
+  - http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=7299323
+
+- "Data Dissemination With Network Coding in Two-Way
+  Vehicle-to-Vehicle Networks"
+  - http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=7299323
+
+* Another IEEE journal: IEEE Transactions on Vehicular Technology
+
+!! VERY RELEVANT !!
+- "Multihop-Cluster-Based IEEE 802.11p and LTE Hybrid Architecture for
+  VANET Safety Message Dissemination"
+  - http://ieeexplore.ieee.org/document/7081788/
+
+- "Routing Protocol for Heterogeneous Wireless Mesh Networks"
+  - http://ieeexplore.ieee.org/document/7406766/
+
+- "SeDS: Secure Data Sharing Strategy for D2D Communication in
+  LTE-Advanced Networks"
+  - http://ieeexplore.ieee.org/document/7065294/
+
+- "Hybrid Centralized–Distributed Resource Allocation for
+  Device-to-Device Communication Underlaying Cellular Networks"
+  - http://ieeexplore.ieee.org/document/7087396/
+
+- "Joint Spectrum and Power Allocation for D2D Communications
+  Underlaying Cellular Networks"
+  - http://ieeexplore.ieee.org/document/7089306/
+
