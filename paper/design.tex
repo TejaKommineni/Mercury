@@ -1,0 +1,121 @@
+\section*{Design}
+
+Delivering messages, critical and casual, to mobile users and
+endpoints that are interested in them is the overarching premise of
+this work. Our vision for realizing an end-to-end mobile message
+delivery service design principles revolve around {\bf X} central
+goals:
+
+\begin{itemize}
+\item Relevant content
+
+The service should provide mechanisms to target groups of endpoints
+which have explicit or implied interest in messages. A message may be
+important because an end user specifically asked for the content based
+on its attributes (nearby gas prices). Alternatively, a message may be
+deemed relevant for the endpoint because it is related to an emergent
+event (vehicle accident ahead).
+
+\item Robust, low overhead, low latency communication
+
+Message intent drives content delivery requirements.  For example,
+different types of emergency service messages have been identified for
+VANETs, each having distinct latency
+requirements~\cite{vanet-msg-reqs}. The service should strive to
+minimize latency to provide on-time delivery with headroom for outlier
+delays. Messages should be categoriezed according to their relative
+importance and processed accordingly (e.g., emergency info before
+consumer content).
+
+\item Flexible deployment
+
+Adoption of the service is bolstered by adaptability to different
+mobile networking environments.  Such accomodation allows for
+deployment into LTE networks with different geographic EPC service
+placements and degrees of maleability.  The service should allow for
+centralized metropolitan area integration (CloudRAN) and distributed
+edge deployment (peer-to-peer eNodeB).
+
+\item Message trust and integrity
+
+Messaging is vulnerable to various attacks, particularly if peers are
+used as transits such as in 802.11p multihop clusters. A combination
+of PKI, message integrity checks, and centralized vetting should be
+employed to curtail abuse and instill trust.
+
+\item Reuse of effective technologies
+
+It is our contention that an end-to-end service should not supplant
+existing mechanisms useful for achieveing its composition.  Indeed, it
+is counterproductive to introduce new service components that induce
+unnecessary changes and capital investments. The messaging service
+should strive to work alongside existing mobile network protocols and
+services.  Only where existing mechanisms do not provide key
+functionality or do not give adequate service levels should changes be
+introduced.  Such changes should be as minimal and transparent as
+possible to foster compatibility and ease of adoption. On the other
+hand, considering less constrained future mobile network
+architectures~\cite{5G}~\cite{MobilityFirst} is equally important.
+
+\end{itemize}
+
+\subsection{Mercury Architecture Overview}
+
+{\bf INSERT MERCURY ARCHITECTURE PICTURE}
+
+\begin{itemize}
+\item Talk about mobile networking ecosystem and where Mercury fits in.
+\item Scope of work.
+\item Introduce components of Mercury: brief descriptions and relationships
+\end{itemize}
+  
+The remainder of this section of the paper is dedicated to a deeper
+exploration of the design of Mercury and how it aligns with the
+afforementioned goals.
+
+\subsection{Delivering Relevant Content}
+
+\begin{itemize}
+\item Discuss what makes content relevant, and to whom it is relevent.
+\item Metric(s) for relevancy?
+\item Introduce and expand on Areas of Interest (dynamic grouping).
+\item Motivate and describe publish/subscribe mechanism.
+\end{itemize}
+
+\subsection{Reliable Communication}
+
+\begin{itemize}
+\item Differing message requirements, based on type
+\item Effects of latency, minimization through proximity to network edge
+\item Delivery service levels (guaranteed, best effort)
+\item Robust transit mechanisms?
+\end{itemize}
+
+\subsection{Deployment Scenarios}
+
+\begin{itemize}
+\item Components/service designed to integrate into different deployments
+\item Minimal cost/effort: pubsub/broker centrally located with PGWs
+\item Incrementally closer: MTSO or metro-area (CloudRAN) deployment
+\item At the edge: Deployed as a service running on eNodeBs
+\end{itemize}
+
+\subsection{Integrating Trust}
+
+\begin{itemize}
+\item PKI to prevent identity forgery
+\item Message integrity codes to prevent tampering
+\item Sequence numbers to prevent replay attacks
+\item Centralized vetting by broker to detect bad behaviors/actors
+\item Encryption for privacy? We should give this some thought.
+\end{itemize}
+
+\subsection{Technology Reuse and Integration}
+
+\begin{itemize}
+\item Composing from a good collection of parts
+\item Existing pubsub, PKI, MAC/MIC, eMBMS mechanisms, SMORE
+\item Working around limitations
+\item Transparent interposition
+\item Open possibilities in the 5G landscape
+\end{itemize}
