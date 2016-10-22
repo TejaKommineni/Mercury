@@ -121,3 +121,17 @@ http://ieeexplore.ieee.org/servlet/opac?punumber=6979
   Underlaying Cellular Networks"
   - http://ieeexplore.ieee.org/document/7089306/
 
+
+* eMBMS for broadcasting messages efficiently in LTE
+
+  - "Evolved multimedia broadcast/multicast service (eMBMS) in 
+    LTE-advanced: overview and Rel-11 enhancements"
+    - http://ieeexplore.ieee.org/document/6353684/
+
+  - spec: 3GPP TS 36.440 (downloaded)
+
+  - Vendor: Expway - http://www.expway.com
+    - Whitepaper on use cases archived in related work.
+
+  - Vendor: ENENSYS - http://www.enensys.com
+    - eMBMS gateway - content side
