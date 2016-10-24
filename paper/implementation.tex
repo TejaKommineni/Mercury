@@ -16,3 +16,57 @@
 \item Transparent interposition (a la SMORE)
 \item UE/client mechanisms
 \end{itemize}
+
+
+\subsection{Design Goal Alignment}
+
+The remainder of the design section of the paper is dedicated to a
+deeper exploration of the design of Mercury and how it aligns with the
+afforementioned goals.
+
+\subsubsection{Delivering Relevant Content}
+
+\begin{itemize}
+\item Discuss what makes content relevant, and to whom it is relevent.
+\item Metric(s) for relevancy?
+\item Introduce and expand on Areas of Interest (dynamic grouping).
+\item Motivate and describe publish/subscribe mechanism.
+\end{itemize}
+
+\subsubsection{Reliable Communication}
+
+\begin{itemize}
+\item Differing message requirements, based on type
+\item Effects of latency, minimization through proximity to network edge
+\item Delivery service levels (guaranteed, best effort)
+\item Robust transit mechanisms?
+\end{itemize}
+
+\subsubsection{Deployment Scenarios}
+
+\begin{itemize}
+\item Components/service designed to integrate into different deployments
+\item Minimal cost/effort: pubsub/broker centrally located with PGWs
+\item Incrementally closer: MTSO or metro-area (CloudRAN) deployment
+\item At the edge: Deployed as a service running on eNodeBs
+\end{itemize}
+
+\subsubsection{Integrating Trust}
+
+\begin{itemize}
+\item PKI to prevent identity forgery
+\item Message integrity codes to prevent tampering
+\item Sequence numbers to prevent replay attacks
+\item Centralized vetting by broker to detect bad behaviors/actors
+\item Encryption for privacy? We should give this some thought.
+\end{itemize}
+
+\subsubsection{Technology Reuse and Integration}
+
+\begin{itemize}
+\item Composing from a good collection of parts
+\item Existing pubsub, PKI, MAC/MIC, eMBMS mechanisms, SMORE
+\item Working around limitations
+\item Transparent interposition
+\item Open possibilities in the 5G landscape
+\end{itemize}

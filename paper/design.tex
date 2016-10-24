@@ -55,67 +55,198 @@ functionality or do not give adequate service levels should changes be
 introduced.  Such changes should be as minimal and transparent as
 possible to foster compatibility and ease of adoption. On the other
 hand, considering less constrained future mobile network
-architectures~\cite{5G}~\cite{MobilityFirst} is equally important.
+architectures~\cite{5G}~\cite{MobilityFirst} is also important.
 
 \end{itemize}
 
-\subsection{Mercury Architecture Overview}
+We next describe the components of the Mercury messaging system, along
+with how they fit into the 3GPP 4G mobile networking architecture.
 
 {\bf INSERT MERCURY ARCHITECTURE PICTURE}
 
+\subsection{Mercury Components}
+
+Mercury is comprised of four essential components: message broker,
+publish/subscribe system, message adapter, and endpoint.  These
+components are visible in the architecture diagram in
+figure~\ref{fig:merc-arch}. This diagram shows the Mercury components
+in the context of a 4G mobile network (the latter will be described
+after Mercury is covered).
+
 \begin{itemize}
-\item Talk about mobile networking ecosystem and where Mercury fits in.
-\item Scope of work.
-\item Introduce components of Mercury: brief descriptions and relationships
+
+\item Publish/Subscribe System
+
+Mercury makes use of the \pubsub pubsub system. Much work has been
+done on pubsub systems, and it is not the aim of this work to provide
+novel pubsub mechanisms. \pubsub provides ... {\bf discuss desirable
+  attributes, such as scaling, performance, community support, and
+  rich subscription capabilities, and how they are relevant}.
+
+{\bf Discuss how Mercury integrates with the pubsub.}
+
+\item Message Broker
+
+Mercury's message broker is the brain center of the messaging
+system. It processes all incoming messages and sends these to relevant
+endpoints (via \pubsub). It also coordinates messaging system sessions
+with the endpoints. The broker calculates Areas of Interest (see
+section~\ref{section:aoi}) for certain message types (e.g., emergency
+notifications).  Messages are vetted by the broker to prevent
+spoofing, enforce authorized use, cull abuses (flooding, other DoS),
+and perform system data analysis (endpoint reputation, problems with
+coverage, etc.).
+
+The broker forwards vetted and scoped messages to the pubsub system
+for transmission to appropriate endpoints.  The broker does not
+concern itself with how to get the messages to the target endpoint(s);
+that job falls to the Mercury message adapter.
+
+The message broker is horizontally scalable in a data center
+environment. The implementation section discusses how a centralized
+database and distributed in-memory caching is used to accomplish this.
+
+\item Message Adapter
+
+The Mercury message adapter is the conduit through which pubsub
+messages flow through to endpoints. The prototype implementation
+described in this paper targets the 4G EPC, but it is possible to
+target other mobile networking architectures with different adapters.
+
+The message adapter receives group membership updates from the
+broker. This allows it to map (groups of) endpoints to destinations
+within the mobile network.  For example, an adapter's domain may span
+from a single eNodeB to multiple eNodeBs.  The message adapter
+forwards messages toward endpoints (UEs) based where they are attached
+and what state they are in.
+
+\item Endpoints
+
+Mercury endpoints are the producers and consumers of most content in
+the messaging system. Many are client applications running on
+ITS-equipped vehicles.  Such endpoints report in with telemetry, such
+as their current position and speed.  Such endpoints also subscribe to
+particular consumer messages identified by specified attributes.
+
+Endpoints may also be centralized services that connect to the pubsub,
+running at the same location (e.g., CloudRAN datacenter). Examples
+include emergency notification processors, and consumer information
+aggregators (gas prices).
+
 \end{itemize}
-  
-The remainder of this section of the paper is dedicated to a deeper
-exploration of the design of Mercury and how it aligns with the
-afforementioned goals.
 
-\subsection{Delivering Relevant Content}
+\subsection{Mercury Messages}
+
+{\bf Discuss the message types, attributes, flow, etc. in Mercury.}
+
+\subsection{Mobile Networking Ecosystem}
+
+Mercury is primarily framed in the context of the 3GPP 4G and emerging
+5G mobile networking architectures. Therefore, we provide some
+background on these systems.  The vast majority of mobile carriers
+utilize these Evolved Packet Systems (EPS)~\cite{mobile-stats}, making
+them an especially relevant environment in which to operate a mobile
+messaging system.  Note that Mercury is also amenable to other
+mobility-friendly network architectures, such as
+MobilityFirst~\cite{mobility-first}, but we focus the discussion in
+this paper on the 3GPP EPS.  The 4G system has been in active
+deployment for {\bf XXX} years, and has undergone a number of
+revisions. We leverage features up through revision 12 of the 4G EPC
+standards.  Also in play in some deployment scenarios (see
+section~\ref{deployments}) are software defined infrastructure
+concepts that are expected to be prominent components in the upcoming
+5G EPS~\ref{5G-SDI}.
+
+The 4G EPS includes the following key service functions relevant to
+Mercury: Mobility Managment Entity (MME), Home Subscriber Service
+(HSS), Serving Gateway (SGW), Packet Data Network Gateway (PDN-GW or
+more commonly PGW), evolved NodeB (eNodeB), and User Equipment (UE).
+We will briefly describe the role of each of these components, and
+their relationships with one another and with Mercury. The Mercury
+architecture diagram in figure~\ref{fig:merc-arch} shows Mercury
+components in the context of a 4G EPS.  There are additional 4G
+functions in this figure that we will cover in more depth when
+discussing Mercury's design details.
 
 \begin{itemize}
-\item Discuss what makes content relevant, and to whom it is relevent.
-\item Metric(s) for relevancy?
-\item Introduce and expand on Areas of Interest (dynamic grouping).
-\item Motivate and describe publish/subscribe mechanism.
-\end{itemize}
 
-\subsection{Reliable Communication}
+\item User Equipment (UE)
 
-\begin{itemize}
-\item Differing message requirements, based on type
-\item Effects of latency, minimization through proximity to network edge
-\item Delivery service levels (guaranteed, best effort)
-\item Robust transit mechanisms?
+User Equipment typically refers to end user devices such as mobile
+phones, tablets, and 4G radio equipped laptops.  The class of UE
+devices also includes fixed-position equipment, such as alarm
+controllers, remote telemetry systems, and other upcoming 5G Internet
+of Things (IoT) devices. Particularly relevant to Mercury, UE devices
+also include ITS endpoints (vehicles and road network infrastructure).
+
+\item Mobility Management Entity (MME)
+
+The MME is the 4G EPS control plane function responsible for tracking
+the live (dynamic) session state for UEs. It manages session
+setup/release, location tracking, handover between eNodeBs, and other
+tasks. It coordinates interaction between UEs, eNodeBs, SGWs, and the
+HSS. UE authentication and authorization are handled by the MME. In
+some deployment scenarios, Mercury observes the MME signalling (S1-AP
+protocol) to track device status and association.  Mercury also uses
+the MME to setup and manage eMBMS bearers for multicasting messages to
+endpoints.
+
+\item Home Subscriber Service (HSS)
+
+The HSS is essentially a database of user (subscriber) information.
+The MME obtains UE information from the HSS based on mobile network
+identifiers (typically the IMSI in 4G EPS). Authentication parameters,
+QoS service levels, phone system parameters, and other information are
+stored for UEs in the HSS.  Mercury does not make direct use of the
+HSS, but we mention it because it is a key component of the EPC.
+
+\item Serving Gateway (SGW)
+
+The SGW is one of the two anchor points for connected UEs (the other
+being the PGW). The SGW maintains GTP tunnels (which carry UE network
+traffic) between itself and the downstream eNodeB, and also an
+upstream PGW. Handovers between eNodeBs within a particular area
+typically involve migrating the same SGW's downstream tunnel between
+the two.  Handover can be seamlessly handled such that it is largely
+invisible to the UE; its IP address stays the same, and its
+connections remain open.  The upstream GTP tunnel to the PGW stays in
+place across handovers.  In some deployments, Mercury taps into the UE
+data tunnel between eNodeBs and the SGW to extract messages at a
+location closer to the edge (e.g., in a CloudRAN data center).
+
+\item Packet Data Network Gateway (PDN-GW, or PGW)
+
+PGWs are frequently deployed in centralized datacenters in mobile
+carrier networks.  They act as the egress point for a large number of
+UE data bearers (GTP tunnels), and fan out to multiple SGWs. PGWs
+forward UE trafic along toward a target network, which is frequently
+the Internet, but may be a corporate network or IMS (for VoLTE
+calls). PGWs enforce QoS, usually based on the subscriber's plan with
+the carrier. They also do traffic accounting, reporting to billing and
+charging functions. As with the HSS, Mercury does not make direct use
+of the PGW. In some deployments, Mercury sends and receives endpoint
+messages immediately upstream of the PGW device.
+
+\item Evolved NodeB (eNodeB)
+
+eNodeBs are the wireless access points of the 4G EPS. They bridge the
+radio access network (RAN) through which the UEs directly communicate
+with the evolved packet core (EPC). GTP tunnels are established for
+each UE device between the eNodeB it is associated with and an
+upstream SGW.  The eNodeB also initiates session setup and default
+data bearer establishment when UE devices attach. It acts as a proxy
+for UE to MME control plane signalling (Non-Access Stratum (NAS) over
+S1-AP). eNodeBs covering adjacent cells coordinate through the MME and
+possibly with one another to accomplish handover as UEs move. In the
+distributed peer-to-peer deployment scenario, Mercury components run
+directly on the eNodeBs.
+
 \end{itemize}
 
 \subsection{Deployment Scenarios}
 
-\begin{itemize}
-\item Components/service designed to integrate into different deployments
-\item Minimal cost/effort: pubsub/broker centrally located with PGWs
-\item Incrementally closer: MTSO or metro-area (CloudRAN) deployment
-\item At the edge: Deployed as a service running on eNodeBs
-\end{itemize}
+A key aspect of the Mercury design is adaptability to different mobile
+network deployments.
 
-\subsection{Integrating Trust}
+{\bf To be filled in!}
 
-\begin{itemize}
-\item PKI to prevent identity forgery
-\item Message integrity codes to prevent tampering
-\item Sequence numbers to prevent replay attacks
-\item Centralized vetting by broker to detect bad behaviors/actors
-\item Encryption for privacy? We should give this some thought.
-\end{itemize}
-
-\subsection{Technology Reuse and Integration}
-
-\begin{itemize}
-\item Composing from a good collection of parts
-\item Existing pubsub, PKI, MAC/MIC, eMBMS mechanisms, SMORE
-\item Working around limitations
-\item Transparent interposition
-\item Open possibilities in the 5G landscape
-\end{itemize}
