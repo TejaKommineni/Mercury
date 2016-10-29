@@ -137,7 +137,47 @@ aggregators (gas prices).
 
 \subsection{Mercury Messages}
 
-{\bf Discuss the message types, attributes, flow, etc. in Mercury.}
+Messages are the principle and only communication mechanism in
+Mercury. There are two high-level flavors: control and
+content. Control messages include session handling (between broker and
+endpoints), broker to message adapter communication, and subscription
+management (endpoint to pubsub/broker).  Content messages are those
+relevant to applications running on endpoints, such as emergency
+alerts and consumer information (e.g. gas prices).  Periodic session
+maintenance messages are sent from mobile endpoints toward the broker
+to update location and status.  The broker likewise sends periodic
+heartbeat messages toward all endpoints. These messages ensure clients
+and broker stay in sync. Session handling also includes establishment
+and teardown message exchange.  Content messages use structured
+message attributes to signal category information. This allows content
+producer and consumer endpoints to steer messages to one another based
+on interests. All messages flow through both the pubsub system and the
+broker. The broker is always in the loop so that it can enforce sender
+and message authenticity, perform flow control (rate limiting, etc.),
+and compute metrics.
+
+Messages have temporal and spatial relevancy.  Each message type,
+including content messages, are valid within a bounded time
+window. Further, certain message types have strict delivery deadlines
+(emergency messages, inter-vehicle coordination). Such time bounds
+necessarily restrict how Mercury can be deployed, as we discuss in
+subsection~\ref{sec:deployments} below.
+
+Message destination addressing in Mercury includes endpoint, content,
+and area of interest targetting. Endpoint addresses are primarily used
+for session setup and teardown. Content-specific addressing makes use
+of subscription attributes to deliver messages. AOI addresses are
+unique to the mobile environment. AOI bounds are computed by the
+broker. These bounds form the destination address. Message adapters
+check bounds to determine if their downstream area coverage is
+relevant before passing along, and endpoints check their position
+relative to the bounds.  In this way, Mercury allows messages to be
+``area multicasted.''  Mercury's design vision includes using spatial
+analysis techniques~\cite{sp-an1}~\cite{sp-an2} to create and test
+bounds.  As we discuss in the implementation section, the prototype
+restricts itself to simple bounding models (e.g., radius or current
+route). Complex spatial reasoning for improving relevancy is left for
+future work.
 
 \subsection{Mobile Networking Ecosystem}
 
@@ -245,8 +285,122 @@ directly on the eNodeBs.
 
 \subsection{Deployment Scenarios}
 
+{\bf INSERT DEPLOYMENT SCENARIOS DIAGRAM}
+
 A key aspect of the Mercury design is adaptability to different mobile
-network deployments.
+network deployments and architectures. Endpoints, broker, and pubsub
+components are all mobile-environment agnostic. Mobile endpoint
+identity is specific to the Mercury messaging system. The message
+adapter's primary function is to separate the concerns of the
+messaging system with the routing of messages inside the mobile
+network.  Mercury requires a low-latency vantage point near the mobile
+network edge. Message adapters, pubsub, and broker all need to reside
+at this vantage point.  Such proximity allows for message delivery to
+meet timing SLAs.  Distance to endpoints incurs a tradeoff between
+convenience of deployment and ability to meet timing needs. We show
+deployment versus distance/latency requirements in
+table~\ref{tab:lat-req}.
 
-{\bf To be filled in!}
+{\bf ADD DEPLOYMENT VS. LATENCY TABLE}
 
+The message adapter can utilize different techniques to interface with
+a mobile network deployment. In the simplest case, it can interact
+with endpoints via routed network addresses (e.g. IPv4 or
+IPv6). Alternatively, it may transparently interpose on encapsulated
+communication channels to inject/extract messages (e.g. GTP
+bearers). Another option is for the message adapter to operate in
+concert with the wireless access point right at the edge. It could do
+this by transparently interposing on the access point's data plane
+uplink, or via an integrated side channel added into the access point
+software.  We present next three plausible deployment scenarios.
+
+\begin{itemize}
+
+\item Metropolitan area 4G deployment
+
+Consider a city investing in Intelligent Transportation System
+infrastructure. Resources include a data center within the city and
+wireless coverage via eNodeBs (particularly along major vehicle
+corridors). The 4G EPC components reside in the local data center,
+including the PGW.  Given a maximum cabling distance from the data
+center to any eNodeB of around 100~kilometers, one way speed of light
+latency is bounded to less than 5~milliseconds.  LTE one-way wireless
+first-hop target latency is 5~ms, but may be more like
+10~ms~\cite{RAN-latency} due to UE and eNodeB processing overhead.
+Further switch/router hops within the data center should not
+appreciably add to the latency. Egress through SGW/PGW can add another
+5~ms of one-way delay~\cite{EPC-latency}.  Total mobile network
+infrastructure RTT is thus bounded to 40~ms. This leaves 10~ms for
+Mercury components to process messages for low-latency
+vehicle-to-vehicle coordination (within 50 ms).
+
+In this deployment, the Mercury message adapter, pubsub, and broker
+all reside alongside the PGW in the local metro data center. The
+message adapter and mobile endpoints communicate using native network
+addresses (i.e. IPv4 or IPv6).  Mercury components communicate via the
+data center pubsub deployment. The endpoints can obtain the address
+of their associated message adapter using DNS, DHCP options, or
+multicast query.
+
+\item Existing mobile carrier 4G network deployment
+
+In an existing 4G mobile carrier network, there may not be a
+centralized upstream network egress location in a particular metro
+area of interest. Further, PGW nodes are typically deployed at a
+handful of national data centers.  Total one-way latency to egress
+through a PGW in such deployments is often over
+50~ms~\cite{carrier-latency}. Installing Mercury at these national
+data centers would impair its ability to meet SLAs for some classes of
+low-latency messages (see table~\ref{tab:lat-req}). Many mobile
+carriers, however, concentrate regional connectivity at a Mobile
+Telephone Switching Office (MTSO).  Typical one-way latency from
+eNodeB to MTSO is 10~ms~\cite{MTSO-latency}. With LTE RAN latency
+added, the one way latency between MTSO and UE is about 20~ms.
+
+Deployed into a MTSO, Mercury message adapters can interpose on GTP
+data bearers for UEs in the same way that SMORE~\cite{SMORE}
+does. Alternatively, lower-capacity (thus cheaper) combined SGW/PGW
+functions may be deployed into the MTSO. This would allow the provider
+to setup dedicated bearers for services such as Mercury in a MTSO
+location.  Using these options, Mercury can operate with slightly
+higher RTT compared to metropolitan data center deployments.  However,
+the additional latency may not meet the latency requirements for some
+UE-to-UE (vehicle-to-vehicle) applications.
+
+\item Mobile edge 4G/5G deployments
+
+Mercury can be altered to run at the network edge, on the mobile
+wireless access points.  If a deployment includes the ability for
+running services on the eNodeB (or equivalent) access points, then
+Mercury can operate using peer-to-peer semantics.  All components of
+Mercury would run on each eNodeB, and some service endpoints as
+well. The pubsub is extended to form a connectivity mesh between
+adjacent eNodeBs. Mercury's scope at each eNodeB is smaller, and so
+the amount of processing is reduced. When a message destination is an
+area of interest, the local Mercury broker determines whether parts of
+this area lie outside of its coverage.  If so, it sends such messages
+along (via pubsub mesh) to neighboring eNodeBs. These handle their
+portion of the endpoints in the AOI.  Arbitrary consumer content
+messages are also sent along to potential subscribers via the pubsub
+mesh.  This deployment scenario allows for very low-latency messaging
+between nodes connected via the same eNodeB (potentially under 20~ms
+RTT considering RAN latency). Inter-eNodeB communication latency
+depends on the communication path between eNodeBs.  This could be only
+a handful of milliseconds if there are metro-area-local paths.
+
+A second realization of this deployment scenario is via a 5G CloudRAN
+environment~\cite{CloudRAN}. Here eNodeBs are split into remote radio
+heads (RRH) connected to base band units (BBUs).  The latter are
+located in nearby compute aggregation locations; RRH and BBU functions
+can only be about 25~km apart in order to maintain the closed control
+loop between them. BBU functionality in a compute location serves
+multiple RRH units. Mercury components would be deployed into the
+compute locations in this case.  Multiple such compute locations may
+serve an area. Mercury could be deployed to each with a peer-to-peer
+pubsub mesh setup between them.  Similar very low latency messaging is
+possible in this scenario with a Mercury message adapter working with
+the BBUs at its location.  An additional advantage is that the very
+low latency messaging extends to the (larger) area covered by all
+associated RRH units.
+
+\end{itemize}
