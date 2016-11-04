@@ -1,18 +1,20 @@
+\section*{Related Work}
 
 There has been plenty of attention paid to effecient and reliable
 delivery of messages within VANETs.  Much of this focuses on multi-hop
 clustering and hybrid use of evolved packet system RAN (LTE).  The
-VMaSC~\cite{VMaSC}, MDMAC~\cite{MDMAC}, and NHop~\cite{NHop} systems
-attempt to form stable mobile 802.11p clusters, using the LTE network
-to bridge between disconnected clusters. {\bf INSERT INFO ON CMGM.}
-These systems are complimentary to Mercury in that they can be used to
-reduce LTE resource contention and improve reliable transfer of
-messages.
+VMaSC~\cite{ucar2016multihop}, MDMAC~\cite{wolny2008modified}, and
+NHop~\cite{zhang2011novel} systems attempt to form stable mobile 802.11p
+clusters, using the LTE network to bridge between disconnected
+clusters. {\bf INSERT INFO ON CMGM.}  These systems are complimentary
+to Mercury in that they can be used to reduce LTE resource contention
+and improve reliable transfer of messages.
 
 {\bf NEED MORE PUBSUB CITATIONS.}
-The MoPS~\cite{MoPS} publish-subscribe system scales efficiently for
-large numbers of clients and deals well with changing broker
-association.  Mercury could replace the Emulab pubsub system used in
-the prototype with MoPS to help it scale better. MoPS does not include
-the area of interest concept, which would continue to be handled by
-the Mercury broker.
+
+The MoPS~\cite{nasim2014mobile} publish-subscribe system scales
+efficiently for large numbers of clients and deals well with changing
+broker association.  Mercury could replace the Emulab pubsub system
+used in the prototype with MoPS to help it scale better. MoPS does not
+include the area of interest concept, which would continue to be
+handled by the Mercury broker.

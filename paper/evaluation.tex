@@ -1,0 +1,19 @@
+\section*{Evaluation}
+
+\begin{itemize}
+\item Discuss evaluation approach.
+  \begin{itemize}
+  \item Do evaluation in PhantomNet using OpenEPC with emulated RAN.
+  \item Use vehicle mobility model, SUMO, to drive realistic mobility scenarios.
+  \item Use SUMO output (position, primarily), to trigger handover.
+  \end{itemize}
+\item Types of evaluations to perform.
+  \begin{itemize}
+  \item Functional: Endpoints connect and are tracked properly (handover).
+  \item Functional: Areas of Interest are interpreted properly.
+  \item Scaling: Run simulated/emulated scenarios with dozens of endpoints.
+  \item Scaling: Increase message/sec load and observe system response times.
+  \item Trust: Try to forge and alter messages (MITM)
+  \item Trust: Try to manipulate system state (``i.e., game the system'').
+  \end{itemize}
+\end{itemize}

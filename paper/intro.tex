@@ -1,4 +1,4 @@
-\section*{Overview}
+\section*{Introduction}
 
 Intelligent Transportation Systems (ITS)~\cite{ITS} is an emerging
 area that includes many ideas and mechanisms for improving the safety,
@@ -12,14 +12,15 @@ infrastructure and other vehicles. Together with mobile networking a
 la the 3GPP evolved packet system~\cite{3GPP}, robust communication
 approaches involving hybrid LTE and 802.11p~\cite{802.11p} with
 dynamic multi-hop clustering have been
-proposed~\cite{VMasC}~\cite{MDMAC}~\cite{NHop}. Considering safety and
+proposed~\cite{ucar2016multihop}~\cite{wolny2008modified}~\cite{zhang2011novel}.
+Considering safety and
 other types of information exchange in an ITS, applications and events
 have been identified that should be supported~\cite{vanet-apps}, along
 with constraints such as latency for delivery and scope
 (radius). Publish-subscribe systems provide a means to efficiently
 distribute messages and events between infrastructure and mobile
 actors in an ITS. Such pubsub systems can support peer-to-peer and
-infrastructure-sourced messages at scale~\cite{MoPS-scaling}.  While
+infrastructure-sourced messages at scale~\cite{nasim2014mobile}.  While
 research has been done in the areas of VANET communication and
 mobility-aware publish/subscribe systems, holistic compositions of
 these technologies is lacking.  This paper introduces Mercury; a
@@ -45,8 +46,8 @@ injection toward the mobile vehicles is accomplished using SDN
 techniques over control and data paths in the EPS. Injected messages
 make use of multicast slots in the LTE radio access network (RAN) for
 efficient dissemination.  We also show how concepts such as
-CloudRAN~\cite{cloudran} and mobile edge computing~\cite{mobile-edge}
-can further enable
+CloudRAN~\cite{checko2015cloud} and mobile edge computing~\cite{mobile-edge}
+can further enable our system to operate within tighter latency bounds.
 
 \item Introduction of practical methods for determining areas of interest.
 
@@ -61,10 +62,10 @@ approaching, etc.), regions are dynamically computed.
   Mercury ITS messaging system.
 
 We implemented a prototype of Mercury and evaluated it on the
-PhantomNet~\cite{pnet} testbed.  This prototype makes use of
-OpenEPC~\cite{OpenEPC} in the core network and Open Air Interface
+PhantomNet~\cite{banerjee2015phantomnet} testbed.  This prototype makes use of
+OpenEPC~\cite{corici2010openepc} in the core network and Open Air Interface
 (OAI)~\cite{OAI} at the edge (RAN).  We drive the evaluation of Mercury
-using an adaptation of the SUMO~\cite{SUMO} mobility model, and
+using an adaptation of the SUMO~\cite{behrisch2011sumo} mobility model, and
 report on the former's scaling and latency characteristics.
 
 \end{itemize}
