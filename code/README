@@ -1,0 +1,9 @@
+Mercury component subdirectory structure:
+
+adapter - Message adapter code (mobile network to pubsub)
+apps - Client-side endpoint application code
+broker - Mercury broker code
+client - Mercury client-side services code
+common - Code used by more than one component
+pubsub - Pubsub interface/test code
+services - Service endpoint code
