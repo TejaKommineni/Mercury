@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import logger
+import logging
 import time
+import sortedcontainers
 
 MAXRELATIVE = 3600
-TDELTA = 1
 
 PERIODIC = 1
 ONESHOT  = 2
@@ -15,32 +15,37 @@ ONESHOT  = 2
 class Scheduler:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.schedule = []
+        self.schedule = sortedcontainers.SortedListWithKey(key = lambda x: x['when'])
 
     def configure(self, config):
         self.config = config['Scheduler']
         
     def periodic(self, interval, callback):
         if interval < 1:
-            logger.error("Requested inverval too frequent: %d" % int(interval))
-        self.schedule.append([PERIODIC, interval, time.time() + interval, callback])
+            self.logger.error("Requested inverval too frequent: %d" % int(interval))
+        when = int(time.time()) + interval
+        self.schedule.add({ 'when'     : when,
+                            'type'     : PERIODIC,
+                            'interval' : interval,
+                            'callback' : callback })
 
     def oneshot(self, when, callback):
-        if when < MAXRELATIVE:
-            when = time.time() + when
-        self.schedule.append([ONESHOT, when, callback])
+        now = int(time.time())
+        if when < 1:
+            self.logger.error("Requested time is too soon: %d" % when)
+        if when < now:
+            if when > MAXRELATIVE:
+                self.logger.error("Relative oneshot offset too long: %d" % when)
+            when = now + when
+        self.schedule.add({ 'when'     : when,
+                            'type'     : ONESHOT,
+                            'callback' : callback })
 
     def check(self):
-        now = time.time()
-        for (task,details) in self.schedule:
-            interval = when = callback = None
-            if task[0] == PERIODIC:
-                (interval, when, callback) = task[1:]
-            elif task[0] == ONESHOT:
-                (when, callback) = task[1:]
-            if when <= now + TDELTA:
-                callback()
-                if interval:
-                    task[2] = time.time() + interval
-                else:
-                    del self.schedule[task]
+        now = int(time.time())
+        for ival in self.schedule.irange({'when' : 0}, {'when' : now}):
+            self.schedule.remove(ival)
+            ival['callback'](now)
+            if ival['type'] == PERIODIC:
+                ival['when'] = now + ival['interval']
+                self.schedule.add(ival)
