@@ -1,0 +1,60 @@
+//
+// Protocol Buffers definition for messages between the Mercury Adapter and
+// Client Endpoint services.
+//
+syntax = "proto2";
+
+package mercury;
+
+message MercuryMessage {
+  optional string uuid = 1; // Unique ID for this message.
+  enum MsgType {
+    AD_SESS    = 1;  // Mercury Adapter session message to Client Endpoint(s)
+    PUB_CLI    = 2;  // Message for client from pubsub (consumer message)
+    CLI_SESS   = 3;  // Client session message to Mercury Adapter
+    CLI_SUBSCR = 4;  // Client pubsub subscription request
+    CLI_UNSUB  = 5;  // Client pubsub unsubscribe request
+    CLI_PUB    = 6;  // Client message to push to pubsub (producer message)
+  }
+  optional MsgType type = 2; // One of the above types
+  enum AddrType {
+    CLIENT  = 1; // Client address
+    ADAPTER = 2; // Broker address
+    PUBSUB  = 3; // PubSub system address
+    GEO     = 4; // Geographic range address
+  }
+  message Address {
+    optional AddrType type  = 1;
+    optional int64 cli_id = 2;
+    optional string geo_mat = 3;
+  }
+  optional Address src_addr = 3;
+  optional Address dst_addr = 4;
+  optional SessionMsg session_msg = 5;
+  optional PubSubMsg pubsub_msg = 6;
+}
+
+message SessionMsg {
+  optional int32 id = 1;   // Session ID will be assigned by broker
+  enum MsgType {
+    INIT   = 1; // Session initialization messages
+    CLOSE  = 2; // Session close/end messages
+    CLIREP = 3; // Client report message
+    HB     = 4; // Adapter heartbeat message
+  }
+  optional MsgType type = 2; // One of the above types
+  message KeyVal {
+    optional string key = 1;
+    optional string val = 2;
+  }
+  repeated KeyVal attributes = 3; // KV attributes for this session message
+}
+
+message PubSubMsg {
+  optional string topic = 1;  // Corresponds to Kafka Topic
+  message KeyVal {
+    optional string key = 1;
+    optional string val = 2;
+  }
+  repeated KeyVal attributes = 2; // KV pairs from Kafka message
+}
