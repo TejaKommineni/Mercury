@@ -90,6 +90,113 @@ novel pubsub mechanisms. \pubsub provides ... {\bf discuss desirable
   attributes, such as scaling, performance, community support, and
   rich subscription capabilities, and how they are relevant}.
 
+Within Mercury we need pub-sub system for communication of different entities. 
+This requirement directly arises from the need for each vehicle to send and 
+listen to particular types of messages. Pub-Sub systems are elegant for these 
+activities we can publish and subscribe to different events. In our system a 
+vehicle(UE/Client), Message Broker publish and subscribe to events. This is when
+we have started for a quest of an effective pub-sub system. The table{\bf insert
+the comparison table for pub-sub systems} shows the comparison of different 
+pub-sub systems. Below we describe the differences between pub-systems in detail
+and different design decisions that went in for choosing a pub-sub system for
+mercury.
+ 
+Mercury needs a pub-sub system that can serve high number of events with low 
+latency. This is because of the environment in which mercury operates. 
+We have many UE/clients at any given point that interact with the system and for
+them to effectively respond to a situation we need to dissipate the message at 
+the earliest. Making the things even harder our clients are mobile which means 
+they could intermittently loose connection with the pub-sub system which has to
+be re-established. Apache ActiveMQ\cite{activemq} is one of the oldest player
+in this space. Though, ActiveMQ messaging is reliable it's performance forms a
+bottle neck to our system. RabbitMQ\cite{rabbitmq} is a widely used message 
+broker with huge documentation. It is written in Erlang which is suitable for 
+distributed applications, as concurrency and availability are well-supported.
+However, It relies on synchronous delivery of messages that decreases the numbe
+r of events being served. ZeroMQ\cite{zeromq} is another class of pub-sub 
+systems that is designed for high throughput/low latency scenarios. 
+Yet, most of the features will have to be implemented by ourselves combining 
+various pieces of the framework. Redis is an in-memory data structure store, 
+used as database, cache and message broker. Redis needs to have as much memory 
+as there are messages in flight making it more attractive for short living 
+messages and where we don't have a huge consumer capacity so as to not run out 
+of memory.
+
+Finally, we have crossed upon Apache Kafka. It is a pub-sub system written by 
+linkedin and is under open source license of Apache. Apache Kafka addresses many
+of these problems mentioned above. It is very fast and the number of 
+messages/events it serves are way more than any traditional pub-sub system. 
+It can handle bursts without any out of memory issues. Also, It guarantees 
+event ordering. This helps us in going back in time and reading a message that
+has been previously published to Kafka. We can seek old messages by remembering 
+the offset. In a mobile environment this is very useful as we could see frequent
+disconnections. All these attractive features made us choose Kafka as the 
+pub-sub system for mercury. Below, we write briefly about different concepts of 
+Kafka.
+
+\item Apache Kafka
+
+Apache Kafka is a distributed streaming platform which lets users to publish and
+subscribe to streams of records. Kafka is run as a cluster on one or more 
+servers. The Kafka cluster stores streams of records in categories called topics.
+Each record consists of a key, a value, and a timestamp. A topic is a category 
+or feed name to which records are published. In our case it is the event type.
+Topics in Kafka can be multi-subscribed; that is, a topic can have one or more 
+consumers that subscribe to the data written to it. In our implementation
+all the values written to a topic are listened by Message Broker. But, we could
+extend this to different service end points listening on the same topic.
+
+For each topic, the Kafka cluster maintains a partitioned log. Each partition 
+is an ordered, immutable sequence of records that is continually appended to a 
+structured commit log. The records in the partitions are each assigned a 
+sequential id number called the offset that uniquely identifies each record 
+within the partition. In our system we create a single partition for each topic.
+As within a partition order is maintained we can traverse through records using
+the offset of the record. Each partition is replicated across a configurable
+number of servers for fault tolerance. The Kafka cluster retains all published 
+records whether or not they have been consumed—using a configurable retention 
+period.  
+
+Kafka has a beautiful concept called Consumer Groups. Consumer Groups can be 
+defined as set of consumers subscribed to single topic and each consumer is 
+assigned a different partition. We can have multiple consumer groups listening 
+to same topic or different. This concept of forming Consumer Groups helps kafka
+serve advantages of both message queue and a message-broker. Message Queues and 
+message -broker systems have both strengths and a weaknesses. The strength of
+queuing is that it allows us to divide the processing of data over multiple
+consumer instances, which lets you scale your processing. But, queues can't be
+multi-subscribed—once one process reads the data it's gone. Publish-subscribe 
+allows you broadcast data to multiple processes, but has no way of scaling 
+processing since every message goes to every subscriber. The consumer group 
+concept in Kafka generalizes these two concepts. As with a queue the consumer 
+group allows you to divide up processing over a collection of processes 
+(the members of the consumer group). As with publish-subscribe,
+Kafka allows you to broadcast messages to multiple consumer groups. The 
+advantage of this model is that every topic has both these properties—it can 
+scale processing and is also multi-subscriber—there is no need to choose one or
+the other. This is something which we can take advantage of to scale Message 
+Broker horizontally.
+
+
+Kafka has four main APIs: The Producer API allows an application to publish a 
+stream records to one or more Kafka topics. Producers publish data to the topics
+of their choice. 
+The Consumer API allows an application to subscribe to one
+or more topics and process the stream of records produced to them. 
+The Streams API allows an application to act as a stream processor, consuming an
+input stream from one or more topics and producing an output stream to one or 
+more output.
+The Connector API allows building and running reusable producers or consumers 
+that connect Kafka topics to existing applications or data systems. 
+We use Producer API and Consumer API extensively in our implementation.
+
+At a high-level Kafka gives the following guarantees: Messages sent by a 
+producer to a particular topic partition will be appended in the order they are
+sent. A consumer instance sees records in the order they are stored in the log. 
+For a topic with replication factor N, kafka will tolerate up to N-1 server 
+failures without losing any records committed to the log. 
+
+
 {\bf Discuss how Mercury integrates with the pubsub.}
 
 \item Message Broker
