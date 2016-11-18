@@ -2,8 +2,51 @@
 
 \begin{itemize}
 \item The messages/events - types, constraints (size), attributes, etc.
+
+The Mercury Broker we have implemented handles different types of events. 
+Emergency Event, This is an event that is published by a vehicle when it senses
+an emergency situation. Any message indicating such an event is immediately 
+processed by the mercury broker and sends back an area of interest (AOI)
+that has to be alerted for this event.
+Moving Objects Event, This event indicates that there is an object that is 
+crossing a road. For such events, whenever a predicate calculated by scheduler 
+evaluates to true we inform the vehicles in the AOI calculated.
+There are other types of events such as Collision, Obstacle, Congestion and 
+Blocked. All, these events are handled similarly but they differ in two things.
+One is the predicate function and the second is the frequency at which the 
+schedulers run. Our system also supports an other type of event called 
+Area Of Interest. This is different from the aoi which is calculated by
+mercury broker. In this type of event the user is interested in knowing about 
+the different events happening at a particular location. Whenever an event of 
+type area Of interest is received by the mercury broker. It interacts with 
+different handlers and determines the bin for each event type in which the 
+requested aoi falls into. Then runs a predicate on these bins and learns about 
+the traffic conditions in that area which is communicated back to the user.
+
 \item Mercury broker
   \begin{itemize}
+  \item Our Approach
+  
+ Mercury Broker handles events in two steps: In the first step events published
+ are passed on to the respective handlers where we have a filter that determines
+ the different locations from which the feeds are coming in for that specific
+ event.This will give us the messages published at different locations for an 
+ event.Each location can be considered as a bin. We maintain for each bin the 
+ count of messages published, the center point and the radius for that bin.
+ Whenever a message comes into a bin it carries along the coordinates from which
+ this event has been published. We apply a simple mean with the existing center
+ point to determine the new center point. Thus, at every instance we keep 
+ updating the center point and radius.In the second step we have schedulers for
+ each event that get triggered at equal intervals based on the event type. 
+ These schedulers empty the bins of their respective event and run a predicate
+ on them which is a simple Boolean formula that checks for a condition. 
+ A predicate is usually defined over some aggregation function expressed on 
+ messages; when the predicate evaluates to true, the mercury broker publishes 
+ an event to the system with the center point and the radius which we have 
+ calculated for that bin. These are used to determine the area of interest(AOI),
+ AOI is the region that is determined by the mercury broker and constitutes all 
+ the clients that have to be alerted about a situation. 
+ 
   \item Areas of Interest
   \item Trust enforcement
   \item Peering (multiple brokers)
