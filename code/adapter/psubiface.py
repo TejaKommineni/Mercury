@@ -6,8 +6,7 @@ from kafka import KafkaConsumer, KafkaProducer, TopicPartition
 TOPICLIST = ['Message_Broker',]
 
 class AdapterPubSubInterface:
-    def __init__(self, scheduler):
-        self.scheduler = scheduler
+    def __init__(self):
         self.producer = None
         self.consumer_thread = None
         self.topiclist = []

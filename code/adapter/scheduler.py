@@ -2,50 +2,97 @@
 
 import logging
 import time
+import threading
 import sortedcontainers
 
-MAXRELATIVE = 3600
-
-PERIODIC = 1
-ONESHOT  = 2
+from eventhandler import *
 
 #
-# Mercury scheduler/timer utility module
+# Mercury scheduler/timer utility module (singleton scheduler).
 #
 class Scheduler:
+    EVTYPE = "SchedulerEvent"
+    MAXRELATIVE = 3600
+    MINCHECK = 5
+    PERIODIC = 1
+    ONESHOT  = 2
+
+    class __Sched:
+        def __init__(self):
+            self.logger = logging.getLogger("Mercury.Scheduler")
+            self.timer_thread = None
+            self.chkint = Scheduler.MINCHECK
+            self.evhandler = AdapterEventHandler()
+            self.schedule = sortedcontainers.SortedListWithKey(key = lambda x: x['when'])
+
+        def configure(self, config):
+            self.config = config
+
+        def periodic(self, interval, callback):
+            now = int(time.time())
+            if interval < self.chkint:
+                self.logger.error("Requested inverval too frequent: %d" % int(interval))
+                raise
+            when = now + interval
+            self.schedule.add({ 'when'     : when,
+                                'type'     : Scheduler.PERIODIC,
+                                'interval' : interval,
+                                'callback' : callback })
+            self._setup_check_timer(now)
+
+        def oneshot(self, when, callback):
+            now = int(time.time())
+            if when < self.chkint:
+                self.logger.error("Requested time is too soon: %d" % when)
+                raise
+            if when < now:
+                if when > Scheduler.MAXRELATIVE:
+                    self.logger.error("Relative oneshot offset too long: %d" % when)
+                when = now + when
+            self.schedule.add({ 'when'     : when,
+                                'type'     : Scheduler.ONESHOT,
+                                'callback' : callback })
+            self._setup_check_timer(now)
+
+        def check(self):
+            self.logger.debug("Scheduler running check.")
+            now = int(time.time())
+            for ival in self.schedule.irange({'when' : 0}, {'when' : now}):
+                self.schedule.remove(ival)
+                ival['callback'](now)
+                if ival['type'] == Scheduler.PERIODIC:
+                    ival['when'] = now + ival['interval']
+                    self.schedule.add(ival)
+            self._setup_check_timer(now)
+
+        def _fire(self):
+            ev = AdapterEvent(Scheduler.EVTYPE)
+            self.evhandler.fire(ev)
+
+        def _setup_check_timer(self, now = int(time.time())):
+            if not len(self.schedule): return
+            if self.timer_thread:
+                self.timer_thread.cancel()
+                self.timer_thread = None
+            nextdl = self.schedule[0]['when'] - now
+            if nextdl < Scheduler.MINCHECK:
+                nextdl = Scheduler.MINCHECK
+            self.timer_thread = threading.Timer(nextdl, self._fire)
+            self.timer_thread.daemon = True
+            self.timer_thread.start()
+
+        def start(self):
+            self.logger.info("Scheduler started - interval %d" % self.chkint)
+            self._setup_check_timer()
+
+        def stop(self):
+            self.timer_thread.cancel()
+
+    instance = None
+
     def __init__(self):
-        self.logger = logging.getLogger(__name__)
-        self.schedule = sortedcontainers.SortedListWithKey(key = lambda x: x['when'])
+        if not Scheduler.instance:
+            Scheduler.instance = Scheduler.__Sched()
 
-    def configure(self, config):
-        self.config = config['Scheduler']
-        
-    def periodic(self, interval, callback):
-        if interval < 1:
-            self.logger.error("Requested inverval too frequent: %d" % int(interval))
-        when = int(time.time()) + interval
-        self.schedule.add({ 'when'     : when,
-                            'type'     : PERIODIC,
-                            'interval' : interval,
-                            'callback' : callback })
-
-    def oneshot(self, when, callback):
-        now = int(time.time())
-        if when < 1:
-            self.logger.error("Requested time is too soon: %d" % when)
-        if when < now:
-            if when > MAXRELATIVE:
-                self.logger.error("Relative oneshot offset too long: %d" % when)
-            when = now + when
-        self.schedule.add({ 'when'     : when,
-                            'type'     : ONESHOT,
-                            'callback' : callback })
-
-    def check(self):
-        now = int(time.time())
-        for ival in self.schedule.irange({'when' : 0}, {'when' : now}):
-            self.schedule.remove(ival)
-            ival['callback'](now)
-            if ival['type'] == PERIODIC:
-                ival['when'] = now + ival['interval']
-                self.schedule.add(ival)
+    def __getattr__(self, name):
+        return getattr(self.instance, name)

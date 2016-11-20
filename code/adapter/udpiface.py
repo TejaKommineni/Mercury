@@ -2,13 +2,17 @@
 
 import socket
 import threading
-
-RECVSIZE = 2**16 - 1
+import logging
+import eventhandler
 
 class AdapterUDPInterface:
-    def __init__(self, scheduler):
-        self.scheduler = scheduler
+    EVTYPE = "UDPReceiveEvent"
+    RECVSIZE = 2**16 - 1
+
+    def __init__(self):
+        self.logger = logging.getLogger('Mercury.AdapterUDPInterface')
         self.udprecv_thread = None
+        self.evhandler = eventhandler.AdapterEventHandler()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.msglist = []
         self.msglock = threading.Lock()
@@ -18,7 +22,7 @@ class AdapterUDPInterface:
 
     def bind(self):
         self.socket.bind(('', int(self.config['udp_port'])))
-        print "UDP socket bound on port %s" % self.config['udp_port']
+        self.logger.info("UDP socket bound on port %s" % self.config['udp_port'])
         self.udprecv_thread = threading.Thread(target=self.udp_recv)
         self.udprecv_thread.daemon = True
         self.udprecv_thread.start()
@@ -30,9 +34,11 @@ class AdapterUDPInterface:
 
     def udp_recv(self):
         while True:
-            udpmsg = self.socket.recvfrom(RECVSIZE)
-            print "Got UDP msg!"
+            udpmsg = self.socket.recvfrom(self.RECVSIZE)
+            self.logger.debug("Got UDP msg!")
             self._add_msg(udpmsg)
+            ev = eventhandler.AdapterEvent(AdapterUDPInterface.EVTYPE)
+            self.evhandler.fire(ev)
 
     def get_msg(self):
         msg = None
