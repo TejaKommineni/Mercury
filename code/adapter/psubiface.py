@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 import threading
+import logging
 from kafka import KafkaConsumer, KafkaProducer, TopicPartition
 
 TOPICLIST = ['Message_Broker',]
 
 class AdapterPubSubInterface:
     def __init__(self):
+        self.logger = logging.getLogger('Mercury.AdapterPubSubInterface')
         self.producer = None
         self.consumer_thread = None
         self.topiclist = []
@@ -26,6 +28,7 @@ class AdapterPubSubInterface:
         self.topiclock.release()
 
     def connect(self):
+        self.logger.info("Connecting to Kafka pubsub")
         self.consumer_thread = threading.Thread(target=self.run_consumer)
         self.consumer_thread.daemon = True
         self.consumer_thread.start()
@@ -40,14 +43,14 @@ class AdapterPubSubInterface:
         self.consumer = KafkaConsumer(bootstrap_servers=[self.psconfig['bootstrap_server']])
         self.consumer.assign(self.topiclist)
         for msg in self.consumer:
-            print "got one!"
+            self.logger.debug("Received message from pubsub!")
             self._add_msg(msg)
 
     def get_msg(self):
         msg = None
         self.msglock.acquire()
         if len(self.msglist):
-            msg = self.msglist.pop()
+            msg = self.msglist.pop(0)
         self.msglock.release()
         return msg
 

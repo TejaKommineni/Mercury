@@ -44,9 +44,9 @@ class AdapterUDPInterface:
         msg = None
         self.msglock.acquire()
         if len(self.msglist):
-            msg = self.msglist.pop()
+            msg = self.msglist.pop(0)
         self.msglock.release()
         return msg
 
     def send_msg(self, host, port, msg):
-        self.socket.sendto(msg, (host, port))
+        return self.socket.sendto(msg, (host, port))

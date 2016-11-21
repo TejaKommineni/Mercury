@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from kafka import KafkaProducer
 from kafka import KafkaConsumer
 from kafka import TopicPartition
@@ -26,6 +28,7 @@ class MessageBroker:
         topics_list.append(TopicPartition('Congestion', 0))
         topics_list.append(TopicPartition('Blocked', 0))
         topics_list.append(TopicPartition('Area_Of_Interest', 0))
+        topics_list.append(TopicPartition('Client_Report', 0))
         
         consumer.assign(topics_list)     
         
@@ -46,7 +49,9 @@ class MessageBroker:
             if(record.topic =='Blocked'):
               self.block_handler(record.value)   
             if(record.topic =='Area_Of_Interest'):
-              self.aoi_handler(record.value)              
+              self.aoi_handler(record.value)
+            if(record.topic =='Client_Report'):
+              self.clirep_handler(record.value)
     
     # we are publishing the emergency message immediately after receiving.        
     def emergency_handler(self, message): 
@@ -80,6 +85,10 @@ class MessageBroker:
                
     def moving_handler(self, message):
         print(message)
+
+    def clirep_handler(self, message):
+        print(message)
+        
     def lane_change_handler(self, message):
         message={'x_location':message['x_location'],'y_location':message['y_location'], 'value':'This is a lane change message'} 
         self.publish(message)

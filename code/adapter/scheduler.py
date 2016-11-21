@@ -21,7 +21,6 @@ class Scheduler:
         def __init__(self):
             self.logger = logging.getLogger("Mercury.Scheduler")
             self.timer_thread = None
-            self.chkint = Scheduler.MINCHECK
             self.evhandler = AdapterEventHandler()
             self.schedule = sortedcontainers.SortedListWithKey(key = lambda x: x['when'])
 
@@ -30,10 +29,13 @@ class Scheduler:
 
         def periodic(self, interval, callback):
             now = int(time.time())
-            if interval < self.chkint:
+            interval = int(interval)
+            if interval < Scheduler.MINCHECK:
                 self.logger.error("Requested inverval too frequent: %d" % int(interval))
                 raise
             when = now + interval
+            self.logger.debug("Periodic job: Interval: %d. Function: %s" %
+                              (interval, callback))
             self.schedule.add({ 'when'     : when,
                                 'type'     : Scheduler.PERIODIC,
                                 'interval' : interval,
@@ -42,7 +44,8 @@ class Scheduler:
 
         def oneshot(self, when, callback):
             now = int(time.time())
-            if when < self.chkint:
+            when = int(when)
+            if when < Scheduler.MINCHECK:
                 self.logger.error("Requested time is too soon: %d" % when)
                 raise
             if when < now:
@@ -55,7 +58,7 @@ class Scheduler:
             self._setup_check_timer(now)
 
         def check(self):
-            self.logger.debug("Scheduler running check.")
+            self.logger.debug("Scheduler check fired!")
             now = int(time.time())
             for ival in self.schedule.irange({'when' : 0}, {'when' : now}):
                 self.schedule.remove(ival)
@@ -78,12 +81,8 @@ class Scheduler:
             if nextdl < Scheduler.MINCHECK:
                 nextdl = Scheduler.MINCHECK
             self.timer_thread = threading.Timer(nextdl, self._fire)
-            self.timer_thread.daemon = True
+            self.timer_thread.setDaemon(True)
             self.timer_thread.start()
-
-        def start(self):
-            self.logger.info("Scheduler started - interval %d" % self.chkint)
-            self._setup_check_timer()
 
         def stop(self):
             self.timer_thread.cancel()
