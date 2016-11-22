@@ -9,7 +9,7 @@ import logging
 sys.path.append(os.path.abspath("../common"))
 import sessionmessage as sm
 import mercury_pb2 as mproto
-from scheduler import Scheduler
+import scheduler as sch
 
 class ClientSession:
     def __init__(self, cli_id):
@@ -32,12 +32,14 @@ class ClientSession:
         
 class AdapterClientTracker:
     CLIENT_TIMEOUT = 120
+    HEARTBEAT_INTERVAL = 15
     CHECK_INTERVAL = 30
 
     def __init__(self, adapter):
         self.logger = logging.getLogger('Mercury.AdapterClientTracker')
         self.sessions = {}
         self.adapter = adapter
+        self.heartbeat_interval = AdapterClientTracker.HEARTBEAT_INTERVAL
         self.check_interval = AdapterClientTracker.CHECK_INTERVAL
         self.client_timeout = AdapterClientTracker.CLIENT_TIMEOUT
 
@@ -45,12 +47,17 @@ class AdapterClientTracker:
         self.config = config['Adapter']
         if 'client_check_interval' in self.config:
             self.check_interval = int(self.config['client_check_interval'])
+        if 'heartbeat_interval' in self.config:
+            self.heartbeat_interval = int(self.config['heartbeat_interval'])
         if 'client_timeout' in self.config:
             self.client_timeout = int(self.config['client_timeout'])
 
     def start(self):
+        sched = sch.Scheduler()
+        # Start heartbeat sender.
+        sched.periodic(self.heartbeat_interval, self.send_heartbeat)
         # Start tracker GC.
-        Scheduler().periodic(self.check_interval, self.check_clients)
+        sched.periodic(self.check_interval, self.check_clients)
         
     def check_clients(self, now):
         self.logger.debug("Checking for stale clients")
@@ -59,6 +66,11 @@ class AdapterClientTracker:
                 self.logger.debug("Deleting session for idle client: %d" % int(sess.cli_id))
                 del self.sessions[sess.cli_id]
 
+    def send_heartbeat(self, now):
+        self.logger.debug("Sending heartbeat to clients")
+        bcast = self._mk_adapter_cli_sess_msg(0, 0, mproto.SessionMsg.HB)
+        self.adapter.send_cli_bcast(bcast.SerializeToString())
+                
     def process_sess_mesg(self, msg):
         typesw = {
             mproto.SessionMsg.INIT:   self.cli_init,
@@ -71,7 +83,7 @@ class AdapterClientTracker:
             return False
         handler = typesw.get(msg.session_msg.type, _bad)
         return handler(msg)
-
+        
     def _mk_adapter_cli_sess_msg(self, cli_id, sess_id, msg_type):
         msg = mproto.MercuryMessage()
         msg.uuid = str(uuid.uuid4())
@@ -98,7 +110,7 @@ class AdapterClientTracker:
         retmsg = self._mk_adapter_cli_sess_msg(cli_id, sess.id,
                                                mproto.SessionMsg.INIT)
         sm.add_msg_attr(retmsg, sm.INIT.RESPONSE, sm.RV.SUCCESS)
-        self.adapter.send_cli_msg(cli_id, retmsg)
+        self.adapter.send_cli_msg(cli_id, retmsg.SerializeToString())
         self.adapter.send_broker_cli_msg(cli_id, sess)
 
     def cli_close(self, msg):
@@ -131,4 +143,11 @@ class AdapterClientTracker:
             retmsg = self._mk_adapter_cli_sess_msg(cli_id, 0,
                                                    mproto.SessionMsg.CLOSE)
             sm.add_msg_attr(retmsg, sm.CLOSE.REASON, sm.RV.NOSESSION)
-            self.adapter.send_cli_msg(cli_id, retmsg)
+            self.adapter.send_cli_msg(cli_id, retmsg.SerializeToString())
+
+    def get_clients_in_aoi(self, aoi):
+        idlist = []
+        for sess in self.sessions.values():
+            if aoi.in_aoi(sess.x_location, sess.y_location):
+                idlist.append(sess.cli_id)
+        return idlist

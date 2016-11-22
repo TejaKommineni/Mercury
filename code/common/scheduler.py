@@ -5,7 +5,8 @@ import time
 import threading
 import sortedcontainers
 
-from eventhandler import *
+sys.path.append(os.path.abspath("../common"))
+import eventhandler
 
 #
 # Mercury scheduler/timer utility module (singleton scheduler).
@@ -21,7 +22,7 @@ class Scheduler:
         def __init__(self):
             self.logger = logging.getLogger("Mercury.Scheduler")
             self.timer_thread = None
-            self.evhandler = AdapterEventHandler()
+            self.evhandler = eventhandler.EventHandler()
             self.schedule = sortedcontainers.SortedListWithKey(key = lambda x: x['when'])
 
         def configure(self, config):
@@ -69,7 +70,7 @@ class Scheduler:
             self._setup_check_timer(now)
 
         def _fire(self):
-            ev = AdapterEvent(Scheduler.EVTYPE)
+            ev = eventhandler.MercuryEvent(Scheduler.EVTYPE)
             self.evhandler.fire(ev)
 
         def _setup_check_timer(self, now = int(time.time())):

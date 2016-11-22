@@ -2,12 +2,12 @@
 
 import threading
 
-class AdapterEvent:
+class MercuryEvent:
     def __init__(self, evtype, evdata = None):
         self.evtype = evtype
         self.evdata = evdata
 
-class AdapterEventHandler:
+class EventHandler:
     class __EVHandler:
         def __init__(self):
             self.evlock = threading.Lock()
@@ -40,8 +40,8 @@ class AdapterEventHandler:
     instance = None
 
     def __init__(self):
-        if not AdapterEventHandler.instance:
-            AdapterEventHandler.instance = AdapterEventHandler.__EVHandler()
+        if not EventHandler.instance:
+            EventHandler.instance = EventHandler.__EVHandler()
 
     def __getattr__(self, name):
         return getattr(self.instance, name)

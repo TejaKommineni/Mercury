@@ -17,8 +17,17 @@ except socket.error:
 
 
 #host = 'localhost';
-host = sys.argv[1];
-port = 8888;
+if len(sys.argv) > 1:
+    host = sys.argv[1]
+else:
+    host = "localhost"
+
+if len(sys.argv) > 2:
+    cli_id = sys.argv[2]
+else:
+    cli_id = 1234567890
+    
+port = 8888
 
 def _add_sess_msg_attr(msg, key, val):
     attr = msg.session_msg.attributes.add()
@@ -32,7 +41,7 @@ while(1) :
     outmsg.uuid = str(uuid.uuid4())
     outmsg.type = mercury_pb2.MercuryMessage.CLI_SESS
     outmsg.src_addr.type = mercury_pb2.MercuryMessage.CLIENT
-    outmsg.src_addr.cli_id = 112233445566L
+    outmsg.src_addr.cli_id = int(cli_id)
     outmsg.dst_addr.type = mercury_pb2.MercuryMessage.ADAPTER
     outmsg.session_msg.id = 0
     outmsg.session_msg.type = mercury_pb2.SessionMsg.INIT

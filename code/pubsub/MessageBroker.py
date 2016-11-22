@@ -87,7 +87,11 @@ class MessageBroker:
         print(message)
 
     def clirep_handler(self, message):
-        print(message)
+        # FIXME: Testing!
+        message=message.decode()
+        message=json.loads(message)
+        message={'x_location':message['x_location'],'y_location':message['y_location'], 'radius':5, 'value':"Echoing back report from client %s" % message['cli_id']}
+        self.publish(message)
         
     def lane_change_handler(self, message):
         message={'x_location':message['x_location'],'y_location':message['y_location'], 'value':'This is a lane change message'} 

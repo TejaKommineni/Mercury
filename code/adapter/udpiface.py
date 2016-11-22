@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
+import os, sys
 import socket
 import threading
 import logging
+
+sys.path.append(os.path.abspath("../common"))
 import eventhandler
 
 class AdapterUDPInterface:
@@ -12,7 +15,7 @@ class AdapterUDPInterface:
     def __init__(self):
         self.logger = logging.getLogger('Mercury.AdapterUDPInterface')
         self.udprecv_thread = None
-        self.evhandler = eventhandler.AdapterEventHandler()
+        self.evhandler = eventhandler.EventHandler()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.msglist = []
         self.msglock = threading.Lock()
@@ -37,7 +40,7 @@ class AdapterUDPInterface:
             udpmsg = self.socket.recvfrom(self.RECVSIZE)
             self.logger.debug("Got UDP msg!")
             self._add_msg(udpmsg)
-            ev = eventhandler.AdapterEvent(AdapterUDPInterface.EVTYPE)
+            ev = eventhandler.MercuryEvent(AdapterUDPInterface.EVTYPE)
             self.evhandler.fire(ev)
 
     def get_msg(self):
