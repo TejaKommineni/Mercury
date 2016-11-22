@@ -70,6 +70,17 @@ class AdapterClientTracker:
         self.logger.debug("Sending heartbeat to clients")
         bcast = self._mk_adapter_cli_sess_msg(0, 0, mproto.SessionMsg.HB)
         self.adapter.send_cli_bcast(bcast.SerializeToString())
+
+    def check_session(self, msg):
+        cli_id = msg.src_addr.cli_id
+        if not cli_id in self.sessions:
+            self.send_cli_error(cli_id)
+            return False
+        else:
+            sess = self.sessions[cli_id]
+            sess.last_msg = time.time()
+            sess.msg_count += 1
+            return True
                 
     def process_sess_mesg(self, msg):
         typesw = {
@@ -111,7 +122,7 @@ class AdapterClientTracker:
                                                mproto.SessionMsg.INIT)
         sm.add_msg_attr(retmsg, sm.INIT.RESPONSE, sm.RV.SUCCESS)
         self.adapter.send_cli_msg(cli_id, retmsg.SerializeToString())
-        self.adapter.send_broker_cli_msg(cli_id, sess)
+        self.adapter.send_broker_cli_report(cli_id, sess)
 
     def cli_close(self, msg):
         sess = None
@@ -137,17 +148,18 @@ class AdapterClientTracker:
             sess.update(msg)
             self.adapter.send_broker_cli_msg(cli_id, sess)
         else:
-            # Unknown client.  Send NACK.
-            self.logger.warning("Received report from client without associated session, client: %d" %
-                                int(cli_id))
-            retmsg = self._mk_adapter_cli_sess_msg(cli_id, 0,
-                                                   mproto.SessionMsg.CLOSE)
-            sm.add_msg_attr(retmsg, sm.CLOSE.REASON, sm.RV.NOSESSION)
-            self.adapter.send_cli_msg(cli_id, retmsg.SerializeToString())
+            self.send_cli_error(cli_id)
+
+    def send_cli_error(self, cli_id):
+        self.logger.warning("Received message from client without associated session, client: %d" % int(cli_id))
+        retmsg = self._mk_adapter_cli_sess_msg(cli_id, 0,
+                                               mproto.SessionMsg.CLOSE)
+        sm.add_msg_attr(retmsg, sm.CLOSE.REASON, sm.RV.NOSESSION)
+        self.adapter.send_cli_msg(cli_id, retmsg.SerializeToString())
 
     def get_clients_in_aoi(self, aoi):
-        idlist = []
+        clist = []
         for sess in self.sessions.values():
             if aoi.in_aoi(sess.x_location, sess.y_location):
-                idlist.append(sess.cli_id)
-        return idlist
+                clist.append(sess.cli_id)
+        return clist
