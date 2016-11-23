@@ -10,7 +10,7 @@ class ClientAddress:
         self.port = port
 
 
-__udpi = udpiface.AdapterUDPInterface()
+__udpi = udpiface.UDPInterface()
 
 def send_msg(caddr, msg):
     return __udpi.send_msg(caddr.address, caddr.port, msg)

@@ -25,7 +25,7 @@ class UDPInterface:
             self.config   = config
 
         def bind(self):
-            self.socket.bind(('', int(self.config['udp_port'])))
+            self.socket.bind(('', int(self.config['service_port'])))
             self.logger.info("UDP socket bound on port %s" % self.config['service_port'])
             self.udprecv_thread = threading.Thread(target=self.udp_recv)
             self.udprecv_thread.daemon = True
