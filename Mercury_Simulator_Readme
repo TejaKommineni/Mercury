@@ -1,0 +1,27 @@
+# This is a Read me file for Mercury Simulator.
+
+Mercury Simulator on a high level can do two things:
+1) Add Vehicles to the System
+2) Simulate Events
+
+When you select the option of adding vehicles to the system.
+It will display the number of vehicles that are present in the system and asks
+for an input on number of vehicles user would like to add to the system.
+On specifying the input. These vehicles get added to the system and they start
+sending periodic reports every 10 seconds.
+
+When the user selects an option to Simulate an event.Note this should be done 
+only after adding vehicles to the system.
+He will be given the option to simulate different types of events. He can choose 
+one of the event type. After Chosing the event type the user has two options.
+a)The user can look at the existing vehicles in the system and how they are 
+clustered. This can help him know the distribution of the vehicles and a rough
+estimate on which point to simulate the event. So, as to impact a threshold of
+vehicles. He can also custom query the system to see number of vehicles in a
+given region. Once the user chooses the impact region. He can input those to the
+system to simulate the event.
+b)The user can directly input the location at which he wants to issue the event
+without looking at the vehicle distribution of the system.
+
+At present either the reports or the events are just published to console. This
+can be modified based on our usage model.
