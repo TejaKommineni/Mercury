@@ -1,18 +1,23 @@
 #!/usr/bin/env python
+
+# Standard Python modules
 import os, sys
 import string
 import logging
 import json
 import uuid
 
+# Third party modules
 import configparser
 
+# Adapter-specific imports
 import psubiface
-import udpiface
 import clientsession
 import unicastclient as uc
 
+# Common Mercury code
 sys.path.append(os.path.abspath("../common"))
+import udpiface
 import eventhandler
 import mercury_pb2 as mproto
 import areaofinterest as aoi
@@ -41,7 +46,7 @@ class MercuryAdapter:
         self.sched = sch.Scheduler()
         self.evhandler = eventhandler.EventHandler()
         self.psubi = psubiface.AdapterPubSubInterface()
-        self.udpi = udpiface.AdapterUDPInterface()
+        self.udpi = udpiface.UDPInterface()
         self.clitracker = clientsession.AdapterClientTracker(self)
         self.cliaddrs = {}
         self.climap = {}
@@ -72,7 +77,7 @@ class MercuryAdapter:
         self.config_logger(config)
         self.sched.configure(config)
         self.psubi.configure(config)
-        self.udpi.configure(config)
+        self.udpi.configure(self.config)
         self.clitracker.configure(config)
 
     # Daemonize this thing!
@@ -202,7 +207,7 @@ class MercuryAdapter:
                 self.logger.debug("Got event: %s" % ev.evtype)
                 evswitch = {
                     sch.Scheduler.EVTYPE: lambda x: self.sched.check(),
-                    udpiface.AdapterUDPInterface.EVTYPE: self.process_udp_msg,
+                    udpiface.UDPInterface.EVTYPE: self.process_udp_msg,
                     psubiface.AdapterPubSubInterface.EVTYPE: self.process_psub_msg,
                 }
                 def _bad(ev):
