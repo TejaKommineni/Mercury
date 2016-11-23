@@ -26,5 +26,5 @@ def get_msg_attr(msg, attr):
 
 def add_msg_attr(msg, key, val):
     attr = msg.session_msg.attributes.add()
-    attr.key = key
-    attr.val = val
+    attr.key = str(key)
+    attr.val = str(val)

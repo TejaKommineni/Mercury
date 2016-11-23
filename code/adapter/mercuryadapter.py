@@ -92,6 +92,12 @@ class MercuryAdapter:
         os.setsid()
         os.umask(0)
 
+    # Remove client id mapping (address mapping)
+    def delete_cliaddr(self, cli_id):
+        caddr = self.cliaddrs[cli_id]
+        del self.climap[caddr.type][cli_id]
+        del self.cliaddrs[cli_id]
+
     # Send client report across pubsub to broker.
     def send_broker_cli_report(self, cli_id, msg):
         self.psubi.send_msg("Client_Report", json.dumps(msg.__dict__))
@@ -145,9 +151,9 @@ class MercuryAdapter:
         (addr, port) = udpmsg[1]
         pmsg = mproto.MercuryMessage()
         pmsg.ParseFromString(udpmsg[0])
+        cli_id = pmsg.src_addr.cli_id
         if pmsg.type == mproto.MercuryMessage.CLI_SESS:
             # Store address mapping for client and process.
-            cli_id = pmsg.src_addr.cli_id
             caddr = uc.ClientAddress(cli_id, addr, port)
             self.cliaddrs[cli_id] = caddr
             self.climap[CADDR_TYPES.UNICAST][cli_id] = caddr
@@ -155,6 +161,8 @@ class MercuryAdapter:
         elif pmsg.type == mproto.MercuryMessage.CLI_PUB:
             if self.clitracker.check_session(pmsg):
                 self.send_pubsub_cli_msg(pmsg)
+            else:
+                self.delete_cliaddr(cli_id)
         else:
             self.logger.warning("Unexpected UDP message: Type: %s, Client address: %s:%s" % (pmsg.type, addr, port))
 

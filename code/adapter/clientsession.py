@@ -64,6 +64,7 @@ class AdapterClientTracker:
         for sess in self.sessions.values():
             if sess.last_msg + self.client_timeout < now:
                 self.logger.debug("Deleting session for idle client: %d" % int(sess.cli_id))
+                self.adapter.delete_cliaddr(sess.cli_id)
                 del self.sessions[sess.cli_id]
 
     def send_heartbeat(self, now):
@@ -146,7 +147,7 @@ class AdapterClientTracker:
                               int(cli_id))
             sess = self.sessions[cli_id]
             sess.update(msg)
-            self.adapter.send_broker_cli_msg(cli_id, sess)
+            self.adapter.send_broker_cli_report(cli_id, sess)
         else:
             self.send_cli_error(cli_id)
 

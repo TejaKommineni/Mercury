@@ -2,6 +2,7 @@
 
 import os, sys
 import logging
+import random
 import time
 import threading
 import sortedcontainers
@@ -15,7 +16,7 @@ import eventhandler
 class Scheduler:
     EVTYPE = "SchedulerEvent"
     MAXRELATIVE = 3600
-    MINCHECK = 5
+    MINCHECK = 1
     PERIODIC = 1
     ONESHOT  = 2
 
@@ -29,13 +30,15 @@ class Scheduler:
         def configure(self, config):
             self.config = config
 
-        def periodic(self, interval, callback):
-            now = int(time.time())
-            interval = int(interval)
+        def periodic(self, interval, callback, randoffset = 0):
+            now = time.time()
+            interval = float(interval)
             if interval < Scheduler.MINCHECK:
-                self.logger.error("Requested inverval too frequent: %d" % int(interval))
-                raise
+                self.logger.error("Requested inverval too frequent: %f" % interval)
+                raise RuntimeError, "Stopping!"
             when = now + interval
+            if randoffset:
+                when = when + random.uniform(0, randoffset)
             self.logger.debug("Periodic job: Interval: %d. Function: %s" %
                               (interval, callback))
             self.schedule.add({ 'when'     : when,
@@ -44,15 +47,17 @@ class Scheduler:
                                 'callback' : callback })
             self._setup_check_timer(now)
 
-        def oneshot(self, when, callback):
-            now = int(time.time())
-            when = int(when)
+        def oneshot(self, when, callback, randoffset = 0):
+            now = time.time()
+            when = float(when)
+            if randoffset:
+                when = when + random.uniform(0, randoffset)
             if when < Scheduler.MINCHECK:
-                self.logger.error("Requested time is too soon: %d" % when)
-                raise
+                self.logger.error("Requested time is too soon: %f" % when)
+                raise RuntimeError, "Stopping!"
             if when < now:
                 if when > Scheduler.MAXRELATIVE:
-                    self.logger.error("Relative oneshot offset too long: %d" % when)
+                    self.logger.error("Relative oneshot offset too long: %f" % when)
                 when = now + when
             self.schedule.add({ 'when'     : when,
                                 'type'     : Scheduler.ONESHOT,
@@ -61,7 +66,7 @@ class Scheduler:
 
         def check(self):
             self.logger.debug("Scheduler check fired!")
-            now = int(time.time())
+            now = time.time()
             for ival in self.schedule.irange({'when' : 0}, {'when' : now}):
                 self.schedule.remove(ival)
                 ival['callback'](now)
@@ -74,7 +79,7 @@ class Scheduler:
             ev = eventhandler.MercuryEvent(Scheduler.EVTYPE)
             self.evhandler.fire(ev)
 
-        def _setup_check_timer(self, now = int(time.time())):
+        def _setup_check_timer(self, now = time.time()):
             if not len(self.schedule): return
             if self.timer_thread:
                 self.timer_thread.cancel()
