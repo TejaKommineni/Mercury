@@ -180,13 +180,11 @@ class MercuryAdapter:
         # FIXME: Broker is not currently sending along a message type, so
         #        just treat all messages as AOI radius safety broadcasts 
         #        for now.
-        #
-        # FIXME: The 'geo_mat' destination format needs more thought.
         bmsg = self._mk_broker_safety_msg()
-        bmsg.dst_addr.geo_mat = "type:radius,x_location:%s,y_location:%s,radius=%s" % (pmsg['x_location'], pmsg['y_location'], pmsg['radius'])
-        psm.add_msg_attr(bmsg, psm.SAFETY.MSG, pmsg['value'])
         radarea = aoi.RadiusArea(pmsg['x_location'], pmsg['y_location'],
                                  pmsg['radius'])
+        radarea.set_msg_geoaddr(bmsg)
+        psm.add_msg_attr(bmsg, psm.SAFETY.MSG, pmsg['value'])
         self.send_cli_aoi(bmsg.SerializeToString(), radarea)
 
     def _mk_broker_safety_msg(self):
@@ -194,7 +192,6 @@ class MercuryAdapter:
         msg.uuid = str(uuid.uuid4())
         msg.type = mproto.MercuryMessage.PUB_CLI
         msg.src_addr.type = mproto.MercuryMessage.PUBSUB
-        msg.dst_addr.type = mproto.MercuryMessage.GEO
         msg.pubsub_msg.topic = psm.TOPICS.SAFETY
         return msg
         

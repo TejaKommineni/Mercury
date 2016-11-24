@@ -13,7 +13,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='mercury.proto',
   package='mercury',
-  serialized_pb='\n\rmercury.proto\x12\x07mercury\"\xfa\x03\n\x0eMercuryMessage\x12\x0c\n\x04uuid\x18\x01 \x01(\t\x12-\n\x04type\x18\x02 \x01(\x0e\x32\x1f.mercury.MercuryMessage.MsgType\x12\x31\n\x08src_addr\x18\x03 \x01(\x0b\x32\x1f.mercury.MercuryMessage.Address\x12\x31\n\x08\x64st_addr\x18\x04 \x01(\x0b\x32\x1f.mercury.MercuryMessage.Address\x12(\n\x0bsession_msg\x18\x05 \x01(\x0b\x32\x13.mercury.SessionMsg\x12&\n\npubsub_msg\x18\x06 \x01(\x0b\x32\x12.mercury.PubSubMsg\x1aZ\n\x07\x41\x64\x64ress\x12.\n\x04type\x18\x01 \x01(\x0e\x32 .mercury.MercuryMessage.AddrType\x12\x0e\n\x06\x63li_id\x18\x02 \x01(\x03\x12\x0f\n\x07geo_mat\x18\x03 \x01(\t\"]\n\x07MsgType\x12\x0b\n\x07\x41\x44_SESS\x10\x01\x12\x0b\n\x07PUB_CLI\x10\x02\x12\x0c\n\x08\x43LI_SESS\x10\x03\x12\x0e\n\nCLI_SUBSCR\x10\x04\x12\r\n\tCLI_UNSUB\x10\x05\x12\x0b\n\x07\x43LI_PUB\x10\x06\"8\n\x08\x41\x64\x64rType\x12\n\n\x06\x43LIENT\x10\x01\x12\x0b\n\x07\x41\x44\x41PTER\x10\x02\x12\n\n\x06PUBSUB\x10\x03\x12\x07\n\x03GEO\x10\x04\"\xcb\x01\n\nSessionMsg\x12\n\n\x02id\x18\x01 \x01(\x05\x12)\n\x04type\x18\x02 \x01(\x0e\x32\x1b.mercury.SessionMsg.MsgType\x12.\n\nattributes\x18\x03 \x03(\x0b\x32\x1a.mercury.SessionMsg.KeyVal\x1a\"\n\x06KeyVal\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0b\n\x03val\x18\x02 \x01(\t\"2\n\x07MsgType\x12\x08\n\x04INIT\x10\x01\x12\t\n\x05\x43LOSE\x10\x02\x12\n\n\x06\x43LIREP\x10\x03\x12\x06\n\x02HB\x10\x04\"m\n\tPubSubMsg\x12\r\n\x05topic\x18\x01 \x01(\t\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.mercury.PubSubMsg.KeyVal\x1a\"\n\x06KeyVal\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0b\n\x03val\x18\x02 \x01(\t')
+  serialized_pb='\n\rmercury.proto\x12\x07mercury\"\xe5\x05\n\x0eMercuryMessage\x12\x0c\n\x04uuid\x18\x01 \x01(\t\x12-\n\x04type\x18\x02 \x01(\x0e\x32\x1f.mercury.MercuryMessage.MsgType\x12\x31\n\x08src_addr\x18\x03 \x01(\x0b\x32\x1f.mercury.MercuryMessage.Address\x12\x31\n\x08\x64st_addr\x18\x04 \x01(\x0b\x32\x1f.mercury.MercuryMessage.Address\x12(\n\x0bsession_msg\x18\x05 \x01(\x0b\x32\x13.mercury.SessionMsg\x12&\n\npubsub_msg\x18\x06 \x01(\x0b\x32\x12.mercury.PubSubMsg\x12\'\n\x0b\x65nviron_rep\x18\x07 \x01(\x0b\x32\x12.mercury.EnvReport\x1aw\n\x07GeoAddr\x12\x0c\n\x04type\x18\x01 \x01(\t\x12:\n\nattributes\x18\x02 \x03(\x0b\x32&.mercury.MercuryMessage.GeoAddr.KeyVal\x1a\"\n\x06KeyVal\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0b\n\x03val\x18\x02 \x01(\t\x1a\x8c\x01\n\x07\x41\x64\x64ress\x12.\n\x04type\x18\x01 \x01(\x0e\x32 .mercury.MercuryMessage.AddrType\x12\x0e\n\x06\x63li_id\x18\x02 \x01(\x03\x12\x31\n\x08geo_addr\x18\x03 \x01(\x0b\x32\x1f.mercury.MercuryMessage.GeoAddr\x12\x0e\n\x06\x61pp_id\x18\x04 \x01(\x03\"j\n\x07MsgType\x12\x0b\n\x07\x41\x44_SESS\x10\x01\x12\x0b\n\x07PUB_CLI\x10\x02\x12\x0c\n\x08\x43LI_SESS\x10\x03\x12\x0e\n\nCLI_SUBSCR\x10\x04\x12\r\n\tCLI_UNSUB\x10\x05\x12\x0b\n\x07\x43LI_PUB\x10\x06\x12\x0b\n\x07\x41PP_CLI\x10\x07\"A\n\x08\x41\x64\x64rType\x12\n\n\x06\x43LIENT\x10\x01\x12\x0b\n\x07\x41\x44\x41PTER\x10\x02\x12\n\n\x06PUBSUB\x10\x03\x12\x07\n\x03GEO\x10\x04\x12\x07\n\x03\x41PP\x10\x05\"\xcb\x01\n\nSessionMsg\x12\n\n\x02id\x18\x01 \x01(\x05\x12)\n\x04type\x18\x02 \x01(\x0e\x32\x1b.mercury.SessionMsg.MsgType\x12.\n\nattributes\x18\x03 \x03(\x0b\x32\x1a.mercury.SessionMsg.KeyVal\x1a\"\n\x06KeyVal\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0b\n\x03val\x18\x02 \x01(\t\"2\n\x07MsgType\x12\x08\n\x04INIT\x10\x01\x12\t\n\x05\x43LOSE\x10\x02\x12\n\n\x06\x43LIREP\x10\x03\x12\x06\n\x02HB\x10\x04\"m\n\tPubSubMsg\x12\r\n\x05topic\x18\x01 \x01(\t\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.mercury.PubSubMsg.KeyVal\x1a\"\n\x06KeyVal\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0b\n\x03val\x18\x02 \x01(\t\"^\n\tEnvReport\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.mercury.EnvReport.KeyVal\x1a\"\n\x06KeyVal\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0b\n\x03val\x18\x02 \x01(\t')
 
 
 
@@ -47,11 +47,15 @@ _MERCURYMESSAGE_MSGTYPE = _descriptor.EnumDescriptor(
       name='CLI_PUB', index=5, number=6,
       options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='APP_CLI', index=6, number=7,
+      options=None,
+      type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=382,
-  serialized_end=475,
+  serialized_start=595,
+  serialized_end=701,
 )
 
 _MERCURYMESSAGE_ADDRTYPE = _descriptor.EnumDescriptor(
@@ -76,11 +80,15 @@ _MERCURYMESSAGE_ADDRTYPE = _descriptor.EnumDescriptor(
       name='GEO', index=3, number=4,
       options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='APP', index=4, number=5,
+      options=None,
+      type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=477,
-  serialized_end=533,
+  serialized_start=703,
+  serialized_end=768,
 )
 
 _SESSIONMSG_MSGTYPE = _descriptor.EnumDescriptor(
@@ -108,10 +116,78 @@ _SESSIONMSG_MSGTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=689,
-  serialized_end=739,
+  serialized_start=924,
+  serialized_end=974,
 )
 
+
+_MERCURYMESSAGE_GEOADDR_KEYVAL = _descriptor.Descriptor(
+  name='KeyVal',
+  full_name='mercury.MercuryMessage.GeoAddr.KeyVal',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='mercury.MercuryMessage.GeoAddr.KeyVal.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='val', full_name='mercury.MercuryMessage.GeoAddr.KeyVal.val', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=416,
+  serialized_end=450,
+)
+
+_MERCURYMESSAGE_GEOADDR = _descriptor.Descriptor(
+  name='GeoAddr',
+  full_name='mercury.MercuryMessage.GeoAddr',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='type', full_name='mercury.MercuryMessage.GeoAddr.type', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='attributes', full_name='mercury.MercuryMessage.GeoAddr.attributes', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[_MERCURYMESSAGE_GEOADDR_KEYVAL, ],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=331,
+  serialized_end=450,
+)
 
 _MERCURYMESSAGE_ADDRESS = _descriptor.Descriptor(
   name='Address',
@@ -135,9 +211,16 @@ _MERCURYMESSAGE_ADDRESS = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='geo_mat', full_name='mercury.MercuryMessage.Address.geo_mat', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
+      name='geo_addr', full_name='mercury.MercuryMessage.Address.geo_addr', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='app_id', full_name='mercury.MercuryMessage.Address.app_id', index=3,
+      number=4, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -150,8 +233,8 @@ _MERCURYMESSAGE_ADDRESS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=290,
-  serialized_end=380,
+  serialized_start=453,
+  serialized_end=593,
 )
 
 _MERCURYMESSAGE = _descriptor.Descriptor(
@@ -203,10 +286,17 @@ _MERCURYMESSAGE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='environ_rep', full_name='mercury.MercuryMessage.environ_rep', index=6,
+      number=7, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
-  nested_types=[_MERCURYMESSAGE_ADDRESS, ],
+  nested_types=[_MERCURYMESSAGE_GEOADDR, _MERCURYMESSAGE_ADDRESS, ],
   enum_types=[
     _MERCURYMESSAGE_MSGTYPE,
     _MERCURYMESSAGE_ADDRTYPE,
@@ -215,7 +305,7 @@ _MERCURYMESSAGE = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=27,
-  serialized_end=533,
+  serialized_end=768,
 )
 
 
@@ -249,8 +339,8 @@ _SESSIONMSG_KEYVAL = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=653,
-  serialized_end=687,
+  serialized_start=416,
+  serialized_end=450,
 )
 
 _SESSIONMSG = _descriptor.Descriptor(
@@ -291,8 +381,8 @@ _SESSIONMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=536,
-  serialized_end=739,
+  serialized_start=771,
+  serialized_end=974,
 )
 
 
@@ -326,8 +416,8 @@ _PUBSUBMSG_KEYVAL = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=653,
-  serialized_end=687,
+  serialized_start=416,
+  serialized_end=450,
 )
 
 _PUBSUBMSG = _descriptor.Descriptor(
@@ -360,17 +450,84 @@ _PUBSUBMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=741,
-  serialized_end=850,
+  serialized_start=976,
+  serialized_end=1085,
 )
 
+
+_ENVREPORT_KEYVAL = _descriptor.Descriptor(
+  name='KeyVal',
+  full_name='mercury.EnvReport.KeyVal',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='mercury.EnvReport.KeyVal.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='val', full_name='mercury.EnvReport.KeyVal.val', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=416,
+  serialized_end=450,
+)
+
+_ENVREPORT = _descriptor.Descriptor(
+  name='EnvReport',
+  full_name='mercury.EnvReport',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='attributes', full_name='mercury.EnvReport.attributes', index=0,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[_ENVREPORT_KEYVAL, ],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1087,
+  serialized_end=1181,
+)
+
+_MERCURYMESSAGE_GEOADDR_KEYVAL.containing_type = _MERCURYMESSAGE_GEOADDR;
+_MERCURYMESSAGE_GEOADDR.fields_by_name['attributes'].message_type = _MERCURYMESSAGE_GEOADDR_KEYVAL
+_MERCURYMESSAGE_GEOADDR.containing_type = _MERCURYMESSAGE;
 _MERCURYMESSAGE_ADDRESS.fields_by_name['type'].enum_type = _MERCURYMESSAGE_ADDRTYPE
+_MERCURYMESSAGE_ADDRESS.fields_by_name['geo_addr'].message_type = _MERCURYMESSAGE_GEOADDR
 _MERCURYMESSAGE_ADDRESS.containing_type = _MERCURYMESSAGE;
 _MERCURYMESSAGE.fields_by_name['type'].enum_type = _MERCURYMESSAGE_MSGTYPE
 _MERCURYMESSAGE.fields_by_name['src_addr'].message_type = _MERCURYMESSAGE_ADDRESS
 _MERCURYMESSAGE.fields_by_name['dst_addr'].message_type = _MERCURYMESSAGE_ADDRESS
 _MERCURYMESSAGE.fields_by_name['session_msg'].message_type = _SESSIONMSG
 _MERCURYMESSAGE.fields_by_name['pubsub_msg'].message_type = _PUBSUBMSG
+_MERCURYMESSAGE.fields_by_name['environ_rep'].message_type = _ENVREPORT
 _MERCURYMESSAGE_MSGTYPE.containing_type = _MERCURYMESSAGE;
 _MERCURYMESSAGE_ADDRTYPE.containing_type = _MERCURYMESSAGE;
 _SESSIONMSG_KEYVAL.containing_type = _SESSIONMSG;
@@ -379,12 +536,27 @@ _SESSIONMSG.fields_by_name['attributes'].message_type = _SESSIONMSG_KEYVAL
 _SESSIONMSG_MSGTYPE.containing_type = _SESSIONMSG;
 _PUBSUBMSG_KEYVAL.containing_type = _PUBSUBMSG;
 _PUBSUBMSG.fields_by_name['attributes'].message_type = _PUBSUBMSG_KEYVAL
+_ENVREPORT_KEYVAL.containing_type = _ENVREPORT;
+_ENVREPORT.fields_by_name['attributes'].message_type = _ENVREPORT_KEYVAL
 DESCRIPTOR.message_types_by_name['MercuryMessage'] = _MERCURYMESSAGE
 DESCRIPTOR.message_types_by_name['SessionMsg'] = _SESSIONMSG
 DESCRIPTOR.message_types_by_name['PubSubMsg'] = _PUBSUBMSG
+DESCRIPTOR.message_types_by_name['EnvReport'] = _ENVREPORT
 
 class MercuryMessage(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType
+
+  class GeoAddr(_message.Message):
+    __metaclass__ = _reflection.GeneratedProtocolMessageType
+
+    class KeyVal(_message.Message):
+      __metaclass__ = _reflection.GeneratedProtocolMessageType
+      DESCRIPTOR = _MERCURYMESSAGE_GEOADDR_KEYVAL
+
+      # @@protoc_insertion_point(class_scope:mercury.MercuryMessage.GeoAddr.KeyVal)
+    DESCRIPTOR = _MERCURYMESSAGE_GEOADDR
+
+    # @@protoc_insertion_point(class_scope:mercury.MercuryMessage.GeoAddr)
 
   class Address(_message.Message):
     __metaclass__ = _reflection.GeneratedProtocolMessageType
@@ -418,6 +590,18 @@ class PubSubMsg(_message.Message):
   DESCRIPTOR = _PUBSUBMSG
 
   # @@protoc_insertion_point(class_scope:mercury.PubSubMsg)
+
+class EnvReport(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+
+  class KeyVal(_message.Message):
+    __metaclass__ = _reflection.GeneratedProtocolMessageType
+    DESCRIPTOR = _ENVREPORT_KEYVAL
+
+    # @@protoc_insertion_point(class_scope:mercury.EnvReport.KeyVal)
+  DESCRIPTOR = _ENVREPORT
+
+  # @@protoc_insertion_point(class_scope:mercury.EnvReport)
 
 
 # @@protoc_insertion_point(module_scope)
