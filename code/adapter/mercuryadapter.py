@@ -158,6 +158,12 @@ class MercuryAdapter:
             self.cliaddrs[cli_id] = caddr
             self.climap[CADDR_TYPES.UNICAST][cli_id] = caddr
             self.clitracker.process_sess_mesg(pmsg)
+        elif pmsg.type == mproto.MercuryMessage.APP_CLI:
+            # Store address mapping for client and process - sim client.
+            caddr = uc.ClientAddress(cli_id, addr, port, dummy = True)
+            self.cliaddrs[cli_id] = caddr
+            self.climap[CADDR_TYPES.UNICAST][cli_id] = caddr
+            self.clitracker.process_sess_mesg(pmsg)
         elif pmsg.type == mproto.MercuryMessage.CLI_PUB:
             if self.clitracker.check_session(pmsg):
                 self.send_pubsub_cli_msg(pmsg)

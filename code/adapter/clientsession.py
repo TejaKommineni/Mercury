@@ -12,8 +12,9 @@ import mercury_pb2 as mproto
 import scheduler as sch
 
 class ClientSession:
-    def __init__(self, cli_id):
+    def __init__(self, cli_id, dummy = False):
         self.cli_id = cli_id
+        self.dummy = dummy
         self.id = int(random.getrandbits(31))
         self.last_msg = time.time()
         self.msg_count = 0
@@ -83,7 +84,7 @@ class AdapterClientTracker:
             sess.msg_count += 1
             return True
                 
-    def process_sess_mesg(self, msg):
+    def process_sess_mesg(self, msg, dummy = 0):
         typesw = {
             mproto.SessionMsg.INIT:   self.cli_init,
             mproto.SessionMsg.CLOSE:  self.cli_close,
@@ -146,6 +147,14 @@ class AdapterClientTracker:
             self.logger.debug("Received report from client %d" %
                               int(cli_id))
             sess = self.sessions[cli_id]
+            sess.update(msg)
+            self.adapter.send_broker_cli_report(cli_id, sess)
+        elif msg.type == mproto.MercuryMessage.APP_CLI:
+            # Dummy passthru session for simulations.
+            self.logger.debug("Creating session for dummy client: %d" %
+                              int(cli_id))
+            sess = ClientSession(cli_id, dummy = True)
+            self.sessions[cli_id] = sess
             sess.update(msg)
             self.adapter.send_broker_cli_report(cli_id, sess)
         else:

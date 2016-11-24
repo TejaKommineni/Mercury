@@ -39,12 +39,12 @@ while(1) :
 
     outmsg = mercury_pb2.MercuryMessage()
     outmsg.uuid = str(uuid.uuid4())
-    outmsg.type = mercury_pb2.MercuryMessage.CLI_SESS
+    outmsg.type = mercury_pb2.MercuryMessage.APP_CLI
     outmsg.src_addr.type = mercury_pb2.MercuryMessage.CLIENT
     outmsg.src_addr.cli_id = int(cli_id)
     outmsg.dst_addr.type = mercury_pb2.MercuryMessage.ADAPTER
     outmsg.session_msg.id = 0
-    outmsg.session_msg.type = mercury_pb2.SessionMsg.INIT
+    outmsg.session_msg.type = mercury_pb2.SessionMsg.CLIREP
     _add_sess_msg_attr(outmsg, sm.CLIREP.X_LOC, 1234)
     _add_sess_msg_attr(outmsg, sm.CLIREP.Y_LOC, 5467)
     _add_sess_msg_attr(outmsg, sm.CLIREP.DIRECTION, 360)
