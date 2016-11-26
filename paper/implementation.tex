@@ -1,5 +1,19 @@
 \section*{Implementation}
 
+Each Mercury component runs as a self-contained application. The
+Broker and Adapter(s) communicate over unmodified \pubsub. Client
+Endpoints communicate with the Adapter over UDP. Client-side
+applications using Mercury communicate over the local loopback with
+the Client Endpoint process. Service Endpoints use \pubsub to
+communicate with the Broker and talk to Clients via
+Adapter(s). Figure~\ref{fig:implementation} shows our prototype
+implementation, including labeled communication channels. Note that we
+chose the centralized (via-PGW) deployment scenario as our target for
+the prototype implementation.  All Mercury components are written in Python,
+aside from the unmodified \pubsub pubsub software.
+
+FIXME - Add implementation diagram.
+
 \begin{itemize}
 \item The messages/events - types, constraints (size), attributes, etc.
 
@@ -23,44 +37,162 @@ different handlers and determines the bin for each event type in which the
 requested aoi falls into. Then runs a predicate on these bins and learns about 
 the traffic conditions in that area which is communicated back to the user.
 
+Messages must fit into a single UDP packet (maximum of 64K).  Each is
+self contained, with required identifiers, addresses, and message
+payload.  There are two top-level types of messages in the Mercury
+system: session and pubsub.  Session messages are transmitted between
+Client Endpoints and associated Adapters.  Pubsub messages can
+essentially be exchanged between any Mercury components.
+Table~\ref{tab:mesgformat} shows the fields present in Mercury Session
+and PubSub messages. Each Mercury Address contains a destination and
+source address.  The source address can be an Adapter, a specific
+Client, a Service, or the Broker.  The destination address can be any
+of those listed for source, and additionally may be a broadcast (all
+clients, or Area of Interest geo-address).  Each message contains
+key/value pairs in the payload which are interpreted by specific
+applications. For example, emergency alerts published by the Broker
+may be consumed by an alert display application at the Client
+Endpoint.  Client Report message contain mobile telementry
+information: GPS location, direction, and speed. These reports have
+semantic meaning to Mercury, and so are tracked by the Client
+Endpoint, Adapter, and Broker components.  In our prototype
+implementation, the Broker has had emergency event message handling
+folded into it's logic.  Therefore, the prototype Broker also
+interprets safety messages sent via pubsub topics such as
+``Collision'' and ``Object\_Hazard''. We envision that such message
+handling would ultimately be moved to an external Service Endpoint
+application.
+
+\item Areas of Interest
+
+Mercury uses Area of Interest geo-addressing to target specific sets
+of Client Endpoints.  When the Broker wishes to send a message that is
+specific to a location context (e.g., a warning triggered from
+multiple collision reports), it embeds the desired geo-address as the
+destination, and sends this along with the message toward the
+Clients. This message is picked up from the pubsub by the Adapters.
+These check their coverage area and forward the message along to
+Clients within the defined geo-address that they serve (or drop if
+there is no overlap).  When an AOI-addressed message is received by a
+Client Endpoint, it checks its current location to determine if the
+message applies, and processes if so.
+
 \item Mercury broker
   \begin{itemize}
   \item Our Approach
   
- Mercury Broker handles events in two steps: In the first step events published
- are passed on to the respective handlers where we have a filter that determines
- the different locations from which the feeds are coming in for that specific
- event.This will give us the messages published at different locations for an 
- event.Each location can be considered as a bin. We maintain for each bin the 
- count of messages published, the center point and the radius for that bin.
- Whenever a message comes into a bin it carries along the coordinates from which
- this event has been published. We apply a simple mean with the existing center
- point to determine the new center point. Thus, at every instance we keep 
- updating the center point and radius.In the second step we have schedulers for
- each event that get triggered at equal intervals based on the event type. 
- These schedulers empty the bins of their respective event and run a predicate
- on them which is a simple Boolean formula that checks for a condition. 
- A predicate is usually defined over some aggregation function expressed on 
- messages; when the predicate evaluates to true, the mercury broker publishes 
- an event to the system with the center point and the radius which we have 
- calculated for that bin. These are used to determine the area of interest(AOI),
- AOI is the region that is determined by the mercury broker and constitutes all 
- the clients that have to be alerted about a situation. 
- 
-  \item Areas of Interest
-  \item Trust enforcement
-  \item Peering (multiple brokers)
-  \item Endpoint identification/tracking
+  Mercury Broker handles events in two steps: In the first step events
+  published are passed on to the respective handlers where we have a
+  filter that determines the different locations from which the feeds
+  are coming in for that specific event.This will give us the messages
+  published at different locations for an event.Each location can be
+  considered as a bin. We maintain for each bin the count of messages
+  published, the center point and the radius for that bin.  Whenever a
+  message comes into a bin it carries along the coordinates from which
+  this event has been published. We apply a simple mean with the
+  existing center point to determine the new center point. Thus, at
+  every instance we keep updating the center point and radius.In the
+  second step we have schedulers for each event that get triggered at
+  equal intervals based on the event type.  These schedulers empty the
+  bins of their respective event and run a predicate on them which is
+  a simple Boolean formula that checks for a condition.  A predicate
+  is usually defined over some aggregation function expressed on
+  messages; when the predicate evaluates to true, the mercury broker
+  publishes an event to the system with the center point and the
+  radius which we have calculated for that bin. These are used to
+  determine the area of interest(AOI), AOI is the region that is
+  determined by the mercury broker and constitutes all the clients
+  that have to be alerted about a situation.
+
   \end{itemize}
-\item Pubsub service, including subscription and peering semantics
+
+\item Pubsub service
+
+  FIXME - Add a brief discussion on the pubsub setup/config.
+
 \item Mobile network messaging adapter
-\item Unicast upstream transit
-\item eMBMS downstream transit
-\item Transparent interposition (a la SMORE)
+  \begin{itemize}
+  \item Overview
+
+  The Mercury Adapter follows a multi-threaded, event-driven execution
+  pattern. It is highly modular, with clear separation between client
+  state tracking, network-specific address mapping, and transport
+  functionality.  This allows new modes of core network communication
+  to be added alongside (or in place of) existing mechanisms.
+  Different threads of execution handle pubsub, UDP communication, and
+  scheduled tasks (e.g., session checking); all are coordinated
+  through the main thread.
+
+  Mercury is designed so that any number of Adapters can connect to
+  the \pubsub system. Each will send client telemetry reports and
+  pubsub messages along. A single broker message sent via pubsub
+  reaches all connected Adapters, which filter as necessary. For
+  example, an Adapter will drop messages with Area of Interest
+  destinations that do not overlap with its coverage area. These
+  coverage areas are configured by the operator.
+  
+  \item Endpoint identification/tracking
+
+  The Adapter implements client session tracking. When a client comes
+  online, it goes through a lightweight handshake with the Adapter. An
+  INIT message is sent to the adapter, which immediately responds with
+  an ACKNOWLEDGE message. The client includes a telemetry report in
+  its INIT message so that the Adapter and Broker have immediate
+  knowledge of its current state. Each client is provided with a
+  session ID token that must be used in subsequent messages.  The
+  Adapter sends out periodic HEARTBEAT messages to clients so that
+  they can measure liveness in the absence of other messages.
+
+  The Adapter maintains a small amount of state for each client. This
+  includes its unique ID, current mobile telemetry (no history),
+  session ID, and simple statistics (timestamp for last message
+  received, message count). The Adapter also maintains a mapping from
+  the client's ID to its mobile core network address. Changes in this
+  address are automatically detected and the mapping updated. The
+  Adapter treats periodic client reports as heartbeats, and resets
+  corresponding individual timers as these are received. Sessions are
+  pruned after not receiving a report for three times the reporting
+  interval, or after receiving an explicit CLOSE message from the client.
+
+  \item Unicast UDP transport
+
+  In the prototype implementation, we use UDP unicast packets for all
+  communication between Adapter and Client Endpoints. Ideally we would
+  use eMBMS broadcasts for AOI and broadcast (e.g. heartbeat)
+  messages, and we plan to do so in future work. Each UDP packet is a
+  self-contained Mercury message. The contents are encoded using
+  Google's Protocol Buffers~\cite{protocolbuffers} for performance and
+  space efficiency. For AOI destination addresses, the Adapter
+  calculates the set of clients to transmit a message to and unicasts
+  to each individually. For broadcasts, it transmits to all clients
+  with valid sessions.
+
+  \item Pubsub passthrough
+
+  Messages from established clients that are intended for the pubsub
+  system are directly published to the indicated topic by the
+  Adapter. Likewise, messages received from the Broker via pubsub are
+  sent to specific endpoints or broadcast to all clients handled by
+  the Adapter (as appropriate).
+
+  \item Trust enforcement
+
+  FIXME - Move to ``discussion'' section.
+    
+  \end{itemize}
+
 \item UE/client mechanisms
+
+FIXME - FILL IN!
+
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% We may not have time/space to include any goal alignment text.
+%
 
+\com{
 \subsection{Design Goal Alignment}
 
 The remainder of the design section of the paper is dedicated to a
@@ -113,3 +245,4 @@ afforementioned goals.
 \item Transparent interposition
 \item Open possibilities in the 5G landscape
 \end{itemize}
+}
