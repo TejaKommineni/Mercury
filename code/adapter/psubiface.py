@@ -7,8 +7,7 @@ from kafka import KafkaConsumer, KafkaProducer, TopicPartition
 
 sys.path.append(os.path.abspath("../common"))
 import eventhandler
-
-TOPICLIST = ['Message_Broker',]
+import pubsubmessage as psm
 
 class AdapterPubSubInterface:
     EVTYPE = "PubSubEvent"
@@ -19,7 +18,7 @@ class AdapterPubSubInterface:
         self.consumer_thread = None
         self.topiclist = []
         self.topiclock = threading.Lock()
-        for topic in TOPICLIST:
+        for topic in psm.BROKER_TOPICS.TOPICLIST:
             self._add_topic(topic)
         self.msglist = []
         self.msglock = threading.Lock()

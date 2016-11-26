@@ -3,22 +3,31 @@
 from kafka import KafkaProducer
 from kafka import KafkaConsumer
 from kafka import TopicPartition
+import os, sys
 import configparser
 import threading
 import math
 import json
 
+sys.path.append(os.path.abspath("../common"))
+import pubsubmessage as psm
 
-class MessageBroker:    
+CONF_DEFAULTS = {
+    'bootstrap_servers': '127.0.0.1:9092',
+    'enable_auto_commit': 'False',
+}
+
+class MessageBroker:
       
     def extractConfigurations(self,fileName):
-        config = configparser.ConfigParser()
-        config.read(fileName)        
-        self.consumer_properties['bootstrap_servers']=config['Consumer']['bootstrap_servers']
-        self.consumer_properties['enable_auto_commit']=bool(config['Consumer']['enable_auto_commit'])
-                
+        config = configparser.SafeConfigParser(CONF_DEFAULTS)
+        config.read(fileName)
+        self.consumer_properties['bootstrap_servers']=config['PubSub']['bootstrap_servers']
+        self.consumer_properties['enable_auto_commit']=bool(config['PubSub']['enable_auto_commit'])
+        self.producer = KafkaProducer(bootstrap_servers=config['PubSub']['bootstrap_servers'],api_version=(0,10))
+
     def subscribe(self):  
-        consumer = KafkaConsumer(bootstrap_servers=['127.0.0.1:9092'])
+        consumer = KafkaConsumer(bootstrap_servers=self.consumer_properties['bootstrap_servers'])
         topics_list=[]
         topics_list.append(TopicPartition('Emergency', 0))
         topics_list.append(TopicPartition('Collision', 0))
@@ -56,9 +65,15 @@ class MessageBroker:
     # we are publishing the emergency message immediately after receiving.        
     def emergency_handler(self, message): 
          message=message.decode()
-         message=json.loads(message)        
-         message={'x_location':message['x_location'],'y_location':message['y_location'],'radius':10, 'value':'This is an emergency situation'} 
-         self.publish(message) 
+         message=json.loads(message)
+         message={
+             'type': psm.SAFETY.TYPES.EMERGENCY,
+             'x_location': message['x_location'],
+             'y_location': message['y_location'],
+             'radius': 10,
+             'value': 'This is an emergency situation'
+         }
+         self.publish(psm.SAFETY.BROKER_TOPIC, message) 
     def collision_handler(self, message):
         found=False 
         message=message.decode()
@@ -90,8 +105,15 @@ class MessageBroker:
         # FIXME: Testing!
         message=message.decode()
         message=json.loads(message)
-        message={'x_location':message['x_location'],'y_location':message['y_location'], 'radius':5, 'value':"Echoing back report from client %s" % message['cli_id']}
-        self.publish(message)
+        message={
+            'type': psm.UTILITY.TYPES.ECHO,
+            'cli_id': message['cli_id'],
+            'x_location': message['x_location'],
+            'y_location': message['y_location'],
+            'radius': 5,
+            'value': "Echoing back report from client %s" % message['cli_id']
+        }
+        self.publish(psm.UTILITY.BROKER_TOPIC, message)
         
     def lane_change_handler(self, message):
         message={'x_location':message['x_location'],'y_location':message['y_location'], 'value':'This is a lane change message'} 
@@ -125,16 +147,15 @@ class MessageBroker:
         
     def block_handler(self, message):
         print(message) 
+
     def aoi_handler(self, message):
         message=message.decode()
         message=json.loads(message)
         topics_interested=message['aoi_topics']
         #if 'Congestion' in topics_interested:
              
-        
-        
-     
-    # The collision scheduler is called frequently with a less timer than congestion event.    
+    # The collision scheduler is called frequently with a less timer
+    # than congestion event.
     def collision_scheduler(self):       
         collision_info = self.collision_info  
         self.collision_info={}
@@ -143,11 +164,16 @@ class MessageBroker:
                temp=str(key)
                xy=temp.split(',') 
                x1,y1=float(xy[0]),float(xy[1])
-               message={'x_location':x1,'y_location':y1,'radius':2, 'value':'A Collision happened in this area'} 
-               self.publish(message)  
-        threading.Timer(10,self.collision_scheduler).start()    
-                           
-    
+               message = {
+                   'type': psm.SAFETY.TYPES.COLLISION,
+                   'x_location': x1,
+                   'y_location': y1,
+                   'radius': 2,
+                   'value': 'A Collision happened in this area'
+               }
+               self.publish(psm.SAFETY.BROKER_TOPIC, message)
+        threading.Timer(10,self.collision_scheduler).start()
+
     def congestion_scheduler(self):       
         congestion_info = self.congestion_info  
         self.congestion_info={}
@@ -156,22 +182,27 @@ class MessageBroker:
                temp=str(key)
                xy=temp.split(',') 
                x1,y1=float(xy[0]),float(xy[1])
-               message={'x_location':x1,'y_location':y1,'radius':2, 'value':'This area is experiencing a lot of congestion'} 
-               self.publish(message)  
+               message = {
+                   'type': psm.SAFETY.TYPES.CONGESTION,
+                   'x_location': x1,
+                   'y_location': y1,
+                   'radius': 2,
+                   'value': 'This area is experiencing a lot of congestion'
+               }
+               self.publish(psm.SAFETY.BROKER_TOPIC, message)
         threading.Timer(10,self.congestion_scheduler).start()
         
-    def publish(self,message):
-         print("the message published is")
+    def publish(self, topic, message):
+         print("the message published on topic %s is" % topic)
          print(message)
-         message = json.dumps(message) 
-         producer = KafkaProducer(bootstrap_servers=['127.0.0.1:9092'],api_version=(0,10))   
-         producer.send('Message_Broker', message.encode())  
-         producer.close(1)
+         message = json.dumps(message)
+         self.producer.send(topic, message.encode())
         
     def __init__(self):
         self.consumer_properties={}
         self.congestion_info={}
         self.collision_info={}
+        self.producer = None
         threading.Timer(2,self.congestion_scheduler).start()
         threading.Timer(2,self.collision_scheduler).start()
         

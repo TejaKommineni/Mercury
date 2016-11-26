@@ -1,11 +1,29 @@
 #!/usr/bin/env python
 
-class TOPICS:
-    SAFETY = "SAFETY_ALERT"
-
 class SAFETY:
-    MSG = "message"
+    BROKER_TOPIC = "Broker_Safety"
+    class TYPES:
+        COLLISION  = "Collision"
+        CONGESTION = "Congestion"
+        EMERGENCY  = "Emergency"
+        MOVINGOBJ  = "Moving_Objects"
+        OBSTACLE   = "Obstacle"
+        BLOCKED    = "Blocked"
+        LCHANGE    = "Lane_Change_Assistance"
+        ALL        = "_All_Safety_"
+    TYPELIST = [TYPES.COLLISION, TYPES.CONGESTION, TYPES.EMERGENCY,
+                TYPES.MOVINGOBJ, TYPES.OBSTACLE, TYPES.BLOCKED, TYPES.LCHANGE,
+                TYPES.ALL]
 
+class UTILITY:
+    BROKER_TOPIC = "Broker_Utility"
+    class TYPES:
+        ECHO = "Echo"
+    TYPELIST = [TYPES.ECHO,]
+
+class BROKER_TOPICS:
+    TOPICLIST = [SAFETY.BROKER_TOPIC, UTILITY.BROKER_TOPIC]
+    
 def get_msg_attr(msg, attr):
     pmsg = msg.pubsub_msg
     if hasattr(pmsg, 'attributes'):
@@ -16,5 +34,5 @@ def get_msg_attr(msg, attr):
 
 def add_msg_attr(msg, key, val):
     attr = msg.pubsub_msg.attributes.add()
-    attr.key = key
-    attr.val = val
+    attr.key = str(key)
+    attr.val = str(val)

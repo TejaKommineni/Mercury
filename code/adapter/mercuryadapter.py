@@ -175,30 +175,44 @@ class MercuryAdapter:
     # Messages incoming from the pubsub system.
     def process_psub_msg(self, ev):
         pmsg = self.psubi.get_msg()
-        if pmsg.topic == "Message_Broker":
-            msg = json.loads(pmsg.value.decode())
-            self.process_broker_mesg(msg)
+        msgv = json.loads(pmsg.value.decode())
+        if pmsg.topic == psm.SAFETY.BROKER_TOPIC:
+            self.process_broker_safety_mesg(msgv)
+        elif pmsg.topic == psm.UTILITY.BROKER_TOPIC:
+            self.process_broker_utility_mesg(msgv)
         else:
             self.logger.warning("Unknown pubsub topic: %s" % topic)
 
-    # Process message received from broker.
-    def process_broker_mesg(self, pmsg):
-        # FIXME: Broker is not currently sending along a message type, so
-        #        just treat all messages as AOI radius safety broadcasts 
-        #        for now.
-        bmsg = self._mk_broker_safety_msg()
+    # Process safety message received from broker.
+    def process_broker_safety_mesg(self, pmsg):
+        topic = pmsg['type']
+        bmsg = self._mk_broker_msg(topic)
         radarea = aoi.RadiusArea(pmsg['x_location'], pmsg['y_location'],
                                  pmsg['radius'])
         radarea.set_msg_geoaddr(bmsg)
-        psm.add_msg_attr(bmsg, psm.SAFETY.MSG, pmsg['value'])
+        psm.add_msg_attr(bmsg, "message", pmsg['value'])
         self.send_cli_aoi(bmsg.SerializeToString(), radarea)
 
-    def _mk_broker_safety_msg(self):
+    def process_broker_utility_mesg(self, pmsg):
+        topic = pmsg['type']
+        if topic == psm.UTILITY.TYPES.ECHO:
+            if not 'cli_id' in pmsg: return
+            cli_id = pmsg['cli_id']
+            if cli_id in self.cliaddrs:
+                self.logger.debug("Sending along echo message from Broker.")
+                cmsg = self._mk_broker_msg(topic)
+                for k,v in pmsg.items():
+                    psm.add_msg_attr(cmsg, k, v)
+                self.send_cli_msg(cli_id, cmsg.SerializeToString())
+        else:
+            self.logger.warning("Unhandled utility message type from broker: %s" % topic)
+
+    def _mk_broker_msg(self, topic):
         msg = mproto.MercuryMessage()
         msg.uuid = str(uuid.uuid4())
         msg.type = mproto.MercuryMessage.PUB_CLI
         msg.src_addr.type = mproto.MercuryMessage.PUBSUB
-        msg.pubsub_msg.topic = psm.TOPICS.SAFETY
+        msg.pubsub_msg.topic = topic
         return msg
         
     # Start everything up!  Ultimately the scheduler and other

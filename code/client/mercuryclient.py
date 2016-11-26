@@ -10,6 +10,7 @@ import configparser
 
 sys.path.append(os.path.abspath("../common"))
 import udpiface
+import appiface
 import eventhandler
 import session
 import mercury_pb2 as mproto
@@ -37,7 +38,9 @@ class MercuryClient:
         self.sched = sch.Scheduler()
         self.evhandler = eventhandler.EventHandler()
         self.udpi = udpiface.UDPInterface()
+        self.appi = appiface.ClientAppInterface(self)
         self.session = session.ClientSession(self)
+        self.apps = {}
         self.cli_id = None
         self.adapter_addr = None
         self.adapter_port = None
@@ -67,6 +70,7 @@ class MercuryClient:
         self.sched.configure(config)
         self.udpi.configure(self.config)
         self.session.configure(self.config)
+        self.appi.configure(self.config)
         self.cli_id = self.config['client_id']
         self.adapter_addr = self.config['adapter_address']
         self.adapter_port = self.config['adapter_port']
@@ -86,6 +90,24 @@ class MercuryClient:
     def send_adapter_message(self, msg):
         self.udpi.send_msg(self.adapter_addr, int(self.adapter_port), msg)
 
+    def send_pubsub_message(self, msg):
+        msg.src_addr.app_id = None
+        msg.type = mproto.MercuryMessage.CLI_PUB
+        msg.src_addr.type = mproto.MercuryMessage.CLIENT
+        msg.src_addr.cli_id = self.cli_id
+        self.send_adapter_message(msg)
+
+    def send_app_message(self, app_id, msg):
+        if app_id in self.apps:
+            (addr, port) = self.apps[app_id]
+            self.udpi.send_message(addr, port, msg.SerializeToString())
+
+    def pubsub_subscribe(self, topic):
+        self.logger.error("subscribe not implemented yet!")
+
+    def pubsub_unsubscribe(self, topic):
+        self.logger.error("unsubscribe not implemented yet!")
+        
     # Messages received here are from the udp listener, which serves
     # unicast udp clients.
     def process_udp_msg(self, ev):
@@ -96,8 +118,11 @@ class MercuryClient:
         if pmsg.type == mproto.MercuryMessage.AD_SESS:
             self.session.process_adapter_msg(pmsg)
         elif pmsg.type == mproto.MercuryMessage.PUB_CLI:
-            print str(pmsg)
-            pass
+            self.appi.process_pubsub(pmsg)
+        elif pmsg.type == mproto.MercuryMessage.APP_CLI:
+            app_id = pmsg.src_addr.app_id
+            self.apps[app_id] = (addr, port)
+            self.appi.process_app_msg(pmsg)
         else:
             self.logger.warning("Unexpected UDP message: Type: %s, Client address: %s:%s" % (pmsg.type, addr, port))
 
