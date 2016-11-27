@@ -136,7 +136,7 @@ class MercuryAdapter:
                 uc.send_msg(caddr, msg)
 
     # Send message to pubsub from client
-    def send_pubsub_cli_msg(msg):
+    def send_pubsub_cli_msg(self, msg):
         pmsg = msg.pubsub_msg
         topic = pmsg.topic
         attrs = {}
@@ -186,11 +186,13 @@ class MercuryAdapter:
     # Process safety message received from broker.
     def process_broker_safety_mesg(self, pmsg):
         topic = pmsg['type']
+        if not 'radius' in pmsg: pmsg['radius'] = 5
         bmsg = self._mk_broker_msg(topic)
         radarea = aoi.RadiusArea(pmsg['x_location'], pmsg['y_location'],
                                  pmsg['radius'])
         radarea.set_msg_geoaddr(bmsg)
         psm.add_msg_attr(bmsg, "message", pmsg['value'])
+        self.logger.debug("Sending PubSub event to AOI")
         self.send_cli_aoi(bmsg.SerializeToString(), radarea)
 
     def process_broker_utility_mesg(self, pmsg):

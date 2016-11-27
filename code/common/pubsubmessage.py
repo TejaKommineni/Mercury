@@ -2,6 +2,7 @@
 
 class SAFETY:
     BROKER_TOPIC = "Broker_Safety"
+    
     class TYPES:
         COLLISION  = "Collision"
         CONGESTION = "Congestion"
@@ -11,6 +12,12 @@ class SAFETY:
         BLOCKED    = "Blocked"
         LCHANGE    = "Lane_Change_Assistance"
         ALL        = "_All_Safety_"
+
+    class ATTRIBUTES:
+        X_LOC      = "x_location"
+        Y_LOC      = "y_location"
+        RADIUS     = "radius"
+        
     TYPELIST = [TYPES.COLLISION, TYPES.CONGESTION, TYPES.EMERGENCY,
                 TYPES.MOVINGOBJ, TYPES.OBSTACLE, TYPES.BLOCKED, TYPES.LCHANGE,
                 TYPES.ALL]

@@ -91,16 +91,16 @@ class MercuryClient:
         self.udpi.send_msg(self.adapter_addr, int(self.adapter_port), msg)
 
     def send_pubsub_message(self, msg):
-        msg.src_addr.app_id = None
+        msg.src_addr.app_id = 0
         msg.type = mproto.MercuryMessage.CLI_PUB
         msg.src_addr.type = mproto.MercuryMessage.CLIENT
-        msg.src_addr.cli_id = self.cli_id
-        self.send_adapter_message(msg)
+        msg.src_addr.cli_id = int(self.cli_id)
+        self.send_adapter_message(msg.SerializeToString())
 
     def send_app_message(self, app_id, msg):
         if app_id in self.apps:
             (addr, port) = self.apps[app_id]
-            self.udpi.send_message(addr, port, msg.SerializeToString())
+            self.udpi.send_msg(addr, port, msg.SerializeToString())
 
     def pubsub_subscribe(self, topic):
         self.logger.error("subscribe not implemented yet!")
@@ -119,7 +119,9 @@ class MercuryClient:
             self.session.process_adapter_msg(pmsg)
         elif pmsg.type == mproto.MercuryMessage.PUB_CLI:
             self.appi.process_pubsub(pmsg)
-        elif pmsg.type == mproto.MercuryMessage.APP_CLI:
+        elif pmsg.type in (mproto.MercuryMessage.CLI_PUB,
+                           mproto.MercuryMessage.CLI_SUBSCR,
+                           mproto.MercuryMessage.CLI_UNSUB):
             app_id = pmsg.src_addr.app_id
             self.apps[app_id] = (addr, port)
             self.appi.process_app_msg(pmsg)

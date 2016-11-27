@@ -77,13 +77,13 @@ class MessageBroker:
     def collision_handler(self, message):
         found=False 
         message=message.decode()
-        message=json.loads(message) 
-        print(message)        
+        message=json.loads(message)
+        print(message)
         for key,value in self.collision_info.items():
             temp=str(key)
             xy=temp.split(',') 
             x1,y1=float(xy[0]),float(xy[1]) 
-            x2,y2=message['x_location'],message['y_location']     
+            x2,y2=float(message['x_location']),float(message['y_location'])
             distance=math.sqrt(math.pow(x2-x1,2)+math.pow(y2-y1,2)) 
             if distance<=2:
                found=True               
@@ -103,6 +103,7 @@ class MessageBroker:
 
     def clirep_handler(self, message):
         # FIXME: Testing!
+        return
         message=message.decode()
         message=json.loads(message)
         message={
@@ -116,10 +117,19 @@ class MessageBroker:
         self.publish(psm.UTILITY.BROKER_TOPIC, message)
         
     def lane_change_handler(self, message):
-        message={'x_location':message['x_location'],'y_location':message['y_location'], 'value':'This is a lane change message'} 
-        self.publish(message)
+        message=message.decode()
+        message=json.loads(message)
+        message = {
+            'type': psm.SAFETY.TYPES.LCHANGE,
+            'x_location': message['x_location'],
+            'y_location': message['y_location'],
+            'radius': 5,
+            'value': 'This is a lane change message'} 
+        self.publish(psm.SAFETY.BROKER_TOPIC, message)
+        
     def obstacle_handler(self, message):
         print(message)
+        
     def congestion_handler(self, message):
         found=False 
         message=message.decode()
@@ -129,7 +139,7 @@ class MessageBroker:
             temp=str(key)
             xy=temp.split(',') 
             x1,y1=float(xy[0]),float(xy[1]) 
-            x2,y2=message['x_location'],message['y_location']     
+            x2,y2=float(message['x_location']),float(message['y_location'])
             distance=math.sqrt(math.pow(x2-x1,2)+math.pow(y2-y1,2)) 
             if distance<=2:
                found=True               

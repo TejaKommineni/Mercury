@@ -13,12 +13,13 @@ class ClientAppInterface(object):
         self.logger = logging.getLogger("Mercury.AppInterface")
         self.client = client
         self.subs = {}
+        self.subs[psm.SAFETY.TYPES.ALL] = {}
 
     def configure(self, config):
         self.config = config
 
     def process_app_msg(self, msg):
-        app_id = msg.src_id.app_id
+        app_id = msg.src_addr.app_id
         appsw = {
             mproto.MercuryMessage.CLI_SUBSCR: self.handle_subscribe,
             mproto.MercuryMessage.CLI_UNSUB: self.handle_unsubscribe,
@@ -33,11 +34,15 @@ class ClientAppInterface(object):
 
     def process_pubsub(self, msg):
         topic = msg.pubsub_msg.topic
+        self.logger.debug("Received pubsub event, topic: %s" % topic)
         if topic == psm.UTILITY.TYPES.ECHO:
             # FIXME: testing.
             self.logger.debug("\n" + str(msg))
-        elif topic in psm.SAFETY.TYPES.TYPELIST and topic in self.subs:
-            for app_id in self.subs[topic]:
+        elif topic in psm.SAFETY.TYPELIST:
+            if topic in self.subs:
+                for app_id in self.subs[topic]:
+                    self.client.send_app_message(app_id, msg)
+            for app_id in self.subs[psm.SAFETY.TYPES.ALL]:
                 self.client.send_app_message(app_id, msg)
         else:
             if topic in self.subs:
@@ -51,7 +56,7 @@ class ClientAppInterface(object):
                           topic, int(app_id))
         if not topic in self.subs:
             self.subs[topic] = {}
-            if topic not in psm.SAFETY.TYPES.TYPELIST:
+            if topic not in psm.SAFETY.TYPELIST:
                 self.client.pubsub_subscribe(topic)
         self.subs[topic][app_id] = time.time()
 
@@ -68,4 +73,7 @@ class ClientAppInterface(object):
                     self.client.pubsub_unsubscribe(topic)
 
     def handle_pubsub(self, msg):
-        self.client.send_pubsub_message(self, msg)
+        app_id = msg.src_addr.app_id
+        self.logger.debug("Sending app message to pubsub, app_id: %d",
+                          int(app_id))
+        self.client.send_pubsub_message(msg)
