@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from Vehicle import Vehicle
 import threading
 import math
@@ -10,7 +12,9 @@ import uuid
 sys.path.append(os.path.abspath("../common"))
 import udpiface 
 import mercury_pb2
-
+import eventhandler as evh
+import pubsubmessage as psm
+import sessionmessage as sm
 
 class Mercury_Simulator:  
  
@@ -34,7 +38,7 @@ class Mercury_Simulator:
             if speed == 3:
                self.vehicles[id].x_location=(self.vehicles[id].x_location+2)%self.x_max
                self.vehicles[id].y_location=(self.vehicles[id].y_location+2)%self.y_max
-            self.send_reports(id,self.vehicles[id].x_location,self.vehicles[id].y_location,self.vehicles[id].speed)            
+            self.send_report(id,self.vehicles[id].x_location,self.vehicles[id].y_location,self.vehicles[id].speed)            
             self.vehicles[id].last_reported_time=time.time()  
      threading.Timer(5,self.report_scheduler).start()                                   
  
@@ -46,12 +50,12 @@ class Mercury_Simulator:
         print('I can perform the following two actions')
         print('1: Add Vehicles To The System')
         print('2: Simulate An Event')
-        option=input('Please Choose any option:')
-        if option == '1':
+        option=int(input('Please Choose any option:'))
+        if option == 1:
            print('Total number of vehicles in the system are :', len(self.vehicles))
            count_vehicles=input('Input the number of vehicles you would like to add to this system')
            self.add_vehicles(int(count_vehicles))
-        elif option == '2':
+        elif option == 2:
            self.generate_events()
         else:
            print('Your input didnt match the given options. Kindly, select one of the given options')
@@ -66,35 +70,36 @@ class Mercury_Simulator:
     max_y=1    
     while(x_last<=end and count_vehicles>0):
        while(y_last<=end and count_vehicles>0):
-         self.vehicles[num_vehicles+count_vehicles]= Vehicle(num_vehicles+count_vehicles,x_last,y_last,((num_vehicles+count_vehicles)%4),time.time())         
-         self.bind(3000+num_vehicles+count_vehicles)
+         vehicle=Vehicle(num_vehicles+count_vehicles,x_last,y_last,((num_vehicles+count_vehicles)%4),time.time())
+         self.vehicles[num_vehicles+count_vehicles]=vehicle
+         vehicle.listen()
          count_vehicles-=1
          y_last+=1
        x_last+=1
        y_last=1
     self.x_max=end
     self.y_max=end 
- 
- # For each vehicle being added to the system in add_vehicles method. We bind it to a socket.  
- def bind(self, port):
-    self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    self.socket.bind(('', port))
-    print(self.socket.getsockname())    
-    self.udprecv_thread = threading.Thread(target=self.udp_recv_simulator)
-    self.udprecv_thread.daemon = True
-    self.udprecv_thread.start()    
- 
+  
  # The clients added to the system will receive messages through this method on the port they bound. 
  def udp_recv_simulator(self):
-    while True:
-        udpmsg = self.socket.recvfrom(4096)
-        self.logger.debug("Got UDP msg!")
-        print(udpmsg)
+     evhandler = evh.EventHandler()
+     while True:
+         evhandler.wait()
+         while evhandler.hasevents():         
+             ev = evhandler.pop()
+             vehicle_id = int(ev.evdata)
+             vehicle = self.vehicles[vehicle_id]
+             udpmsg = vehicle.get_msg()
+             pmsg = mercury_pb2.MercuryMessage()
+             pmsg.ParseFromString(udpmsg[0])
+             print "Simulator received a UDP msg for vehicle %d:\n%s" % \
+                   (vehicle_id, str(pmsg))
 
  # Report Scheduler calls this method on a vehicle when it has to send a report. 
- def send_reports(self,id,x,y,speed):
+ def send_report(self,id,x,y,speed):
      msg=self.generate_report(id,x,y,speed)
-     return self.socket.sendto(msg, (self.host, 3000+id))
+     vehicle = self.vehicles[id]
+     vehicle.send_msg(self.adapter_addr, self.adapter_port, msg.SerializeToString())
 
  # This method generates the report digest that has to be send across.
  def generate_report(self,id,x,y,speed):
@@ -104,7 +109,12 @@ class Mercury_Simulator:
      outmsg.src_addr.type = mercury_pb2.MercuryMessage.CLIENT
      outmsg.src_addr.cli_id = id
      outmsg.dst_addr.type = mercury_pb2.MercuryMessage.ADAPTER
+     outmsg.session_msg.type = mercury_pb2.SessionMsg.CLIREP
      outmsg.session_msg.id = 0
+     sm.add_msg_attr(outmsg, sm.CLIREP.X_LOC, x)
+     sm.add_msg_attr(outmsg, sm.CLIREP.Y_LOC, y)
+     sm.add_msg_attr(outmsg, sm.CLIREP.DIRECTION, 0)
+     sm.add_msg_attr(outmsg, sm.CLIREP.SPEED, speed)
      return outmsg
           
  # This method is invoked when the user selects to simulate an event in show_options method             
@@ -117,26 +127,26 @@ class Mercury_Simulator:
      print('5: Obstacle')
      print('6: Congestion')
      print('7: Blocked')
-     option=input('Please Choose any option:')
-     if option == '1':
+     option=int(input('Please Choose any option:'))
+     if option == 1:
         x,y,r = self.event_location() 
         self.simulate_events(1,x,y,r) 
-     if option == '2':
+     if option == 2:
         x,y,r = self.event_location() 
         self.simulate_events(2,x,y,r) 
-     if option == '3':
+     if option == 3:
         x,y,r = self.event_location() 
         self.simulate_events(3,x,y,r) 
-     if option == '4':
+     if option == 4:
         x,y,r = self.event_location() 
         self.simulate_events(4,x,y,r) 
-     if option == '5':
+     if option == 5:
         x,y,r = self.event_location() 
         self.simulate_events(5,x,y,r) 
-     if option == '6':
+     if option == 6:
         x,y,r = self.event_location() 
         self.simulate_events(6,x,y,r) 
-     if option == '7':
+     if option == 7:
         x,y,r = self.event_location() 
         self.simulate_events(7,x,y,r)    
                  
@@ -145,8 +155,8 @@ class Mercury_Simulator:
      print('Would you like to look at the vehicle distribution before issuing the event')
      print('1:Yes')
      print('2:No')
-     choice=input('Please Choose any option:')  
-     if choice=='1':
+     choice=int(input('Please Choose any option:'))
+     if choice == 1:
            boundary=self.x_max
            reminder=boundary%5
            start=(boundary-reminder)/5           
@@ -169,8 +179,8 @@ class Mercury_Simulator:
                print('You can custom query me to know the number of vehicles in a given region') 
                print('1:Yes')
                print('2:No')
-               choice=input('Please Choose any option:')  
-               if choice=='1':
+               choice=int(input('Please Choose any option:'))
+               if choice == 1:
                    x=int(input('Enter the x coordinates of the querying region'))
                    y=int(input('Enter the y coordinates of the querying region'))
                    radius=int(input('Enter the querying radius with center being above x,y coordinates'))
@@ -183,7 +193,7 @@ class Mercury_Simulator:
                    print('The count of vehicles in the queried region is', count)       
                    
                
-               if choice=='2':  
+               if choice == 2:  
                    x=int(input('Enter the x coordinates where you want to issue the event'))
                    y=int(input('Enter the y coordinates where you want to issue the event'))
                    radius=int(input('Enter the impact radius with center being above x,y coordinates'))
@@ -191,7 +201,7 @@ class Mercury_Simulator:
               
            
             
-     if choice=='2':  
+     if choice == 2:
        x=int(input('Enter the x coordinates where you want to issue the event'))
        y=int(input('Enter the y coordinates where you want to issue the event'))
        radius=int(input('Enter the impact radius with center being above x,y coordinates'))
@@ -205,46 +215,49 @@ class Mercury_Simulator:
             y_v=self.vehicles[id].y_location
             if(math.sqrt(math.pow((x_v-x), 2)+math.pow((y_v-y), 2))<=r):
                count+=1 
-               self.send_events(type,id,x_v,y_v)
+               self.send_event(type,id,x_v,y_v)
                print("I have seen a collision and my id is", id, x_v, y_v)   
                
         print("Total number of vehicles impacted is", count)   
  
- # For each vehicle that falls under the area of simulation send_events method is called             
- def send_events(self, type,id, x, y):
+ # For each vehicle that falls under the area of simulation send_event method is called             
+ def send_event(self, type,id, x, y):
      if type == 1:         
         event='I am an Emergency Event'  
         msg=self.generate_msg('Emergency',event,id,x,y)
-     if type == 2:         
+     elif type == 2:         
         event='I am a Collision Event'  
         msg=self.generate_msg('Collision',event,id,x,y) 
-     if type == 3:         
+     elif type == 3:         
         event='I see a Moving Object Infront'  
         msg=self.generate_msg('Moving_Objects',event,id,x,y)   
-     if type == 4:         
+     elif type == 4:         
         event='I am changing the lane'  
         msg=self.generate_msg('Lane_Change_Assistance',event,id,x,y)   
-     if type == 5:         
+     elif type == 5:         
         event='I see a Obstacle Infront'  
         msg=self.generate_msg('Obstacle',event,id,x,y)   
-     if type == 6:         
+     elif type == 6:         
         event='There is a lot of Congestion in this location'  
         msg=self.generate_msg('Congestion',event,id,x,y)   
-     if type == 7:         
+     elif type == 7:         
         event='The road is blocked for any vehicular movement'  
         msg=self.generate_msg('Blocked',event,id,x,y)   
-    
-     return self.socket.sendto(msg, (self.host, 3000+id))   
+
+     vehicle = self.vehicles[id]
+     return vehicle.send_msg(self.adapter_addr,self.adapter_port,msg.SerializeToString())
  
- # The generate_msg helps send_events method by returning a message digest that has to be sent when event occurred.
- def generate_msg(topic,msg,id,x,y):
+ # The generate_msg helps send_event method by returning a message digest that has to be sent when event occurred.
+ def generate_msg(self,topic,msg,id,x,y):
      outmsg = mercury_pb2.MercuryMessage()
      outmsg.uuid = str(uuid.uuid4())
-     outmsg.type = mercury_pb2.MercuryMessage.APP_CLI 
+     outmsg.type = mercury_pb2.MercuryMessage.CLI_PUB
      outmsg.src_addr.type = mercury_pb2.MercuryMessage.CLIENT
      outmsg.src_addr.cli_id = id
-     outmsg.dst_addr.type = mercury_pb2.MercuryMessage.ADAPTER
-     outmsg.session_msg.id = 0
+     outmsg.dst_addr.type = mercury_pb2.MercuryMessage.PUBSUB
+     outmsg.pubsub_msg.topic = topic
+     psm.add_msg_attr(outmsg, psm.SAFETY.ATTRIBUTES.X_LOC, x)
+     psm.add_msg_attr(outmsg, psm.SAFETY.ATTRIBUTES.Y_LOC, y)
      return outmsg
       
 
@@ -252,9 +265,13 @@ class Mercury_Simulator:
      self.vehicles={}
      self.x_max=1
      self.y_max=1
-     self.host='0.0.0.0'
-     threading.Timer(5,self.report_scheduler).start()     
-     self.show_options()  
+     self.adapter_addr='127.0.0.1'
+     self.adapter_port=8888
+     threading.Timer(5,self.report_scheduler).start()
+     self.recv_thread = threading.Thread(target=self.udp_recv_simulator)
+     self.recv_thread.daemon = True
+     self.recv_thread.start()
+     self.show_options()
         
         
 simulator = Mercury_Simulator()             
