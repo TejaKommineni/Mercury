@@ -69,4 +69,4 @@ while count > 0:
     time.sleep(pgap)
     count -= 1
 
-time.sleep(5)
+time.sleep(30)

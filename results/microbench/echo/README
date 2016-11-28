@@ -1,0 +1,14 @@
+Runs showing RTT for an echo request/reply from echo app to Broker, and back.
+
+Files are named as follows: run-N
+
+Where 'N' is the rate (msgs/sec) sent.  In all cases, the test was set 
+to send a factor of 10 messages over the rate. This nominally provides
+10 seconds of data per run.
+
+'run-baseline' is a baseline test with a rate of 1 message/sec run for 100 
+seconds.
+
+Note that somewhere between 500 and 750 msgs/sec, messages start to 
+queue up, and delays for successive messages compound.  This indicates 
+the need for more concurrency in message processing.
