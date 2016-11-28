@@ -24,8 +24,14 @@ class SAFETY:
 
 class UTILITY:
     BROKER_TOPIC = "Broker_Utility"
+
     class TYPES:
         ECHO = "Echo"
+
+    class ATTRIBUTES:
+        APP_ID     = "App_ID"
+        ECHO_STAMP = "Echo_Stamp"
+
     TYPELIST = [TYPES.ECHO,]
 
 class BROKER_TOPICS:

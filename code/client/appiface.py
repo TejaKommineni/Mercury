@@ -36,8 +36,8 @@ class ClientAppInterface(object):
         topic = msg.pubsub_msg.topic
         self.logger.debug("Received pubsub event, topic: %s" % topic)
         if topic == psm.UTILITY.TYPES.ECHO:
-            # FIXME: testing.
-            self.logger.debug("\n" + str(msg))
+            app_id = psm.get_msg_attr(msg, psm.UTILITY.ATTRIBUTES.APP_ID)
+            self.client.send_app_message(int(app_id), msg)
         elif topic in psm.SAFETY.TYPELIST:
             if topic in self.subs:
                 for app_id in self.subs[topic]:

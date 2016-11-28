@@ -139,7 +139,7 @@ class MercuryAdapter:
     def send_pubsub_cli_msg(self, msg):
         pmsg = msg.pubsub_msg
         topic = pmsg.topic
-        attrs = {}
+        attrs = {'cli_id': msg.src_addr.cli_id}
         for kv in pmsg.attributes:
             attrs[kv.key] = kv.val
         self.psubi.send_msg(topic, json.dumps(attrs))
@@ -198,11 +198,12 @@ class MercuryAdapter:
     def process_broker_utility_mesg(self, pmsg):
         topic = pmsg['type']
         if topic == psm.UTILITY.TYPES.ECHO:
-            if not 'cli_id' in pmsg: return
             cli_id = pmsg['cli_id']
             if cli_id in self.cliaddrs:
                 self.logger.debug("Sending along echo message from Broker.")
                 cmsg = self._mk_broker_msg(topic)
+                cmsg.dst_addr.type = mproto.MercuryMessage.CLIENT
+                cmsg.dst_addr.cli_id = int(cli_id)
                 for k,v in pmsg.items():
                     psm.add_msg_attr(cmsg, k, v)
                 self.send_cli_msg(cli_id, cmsg.SerializeToString())

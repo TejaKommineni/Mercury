@@ -38,28 +38,31 @@ class MessageBroker:
         topics_list.append(TopicPartition('Blocked', 0))
         topics_list.append(TopicPartition('Area_Of_Interest', 0))
         topics_list.append(TopicPartition('Client_Report', 0))
+        topics_list.append(TopicPartition('Echo', 0))
         
         consumer.assign(topics_list)     
         
         for record in consumer:      
-            print(record)       
-            if(record.topic =='Emergency'):
+            #print(record)
+            if(record.topic =='Echo'):
+              self.echo_handler(record.value)
+            elif(record.topic =='Emergency'):
               self.emergency_handler(record.value) 
-            if(record.topic =='Collision'):
+            elif(record.topic =='Collision'):
               self.collision_handler(record.value) 
-            if(record.topic =='Moving_Objects'):
+            elif(record.topic =='Moving_Objects'):
               self.moving_handler(record.value) 
-            if(record.topic =='Lane_Change_Assistance'):
+            elif(record.topic =='Lane_Change_Assistance'):
               self.lane_change_handler(record.value) 
-            if(record.topic =='Obstacle'):
+            elif(record.topic =='Obstacle'):
               self.obstacle_handler(record.value) 
-            if(record.topic =='Congestion'):
+            elif(record.topic =='Congestion'):
               self.congestion_handler(record.value)   
-            if(record.topic =='Blocked'):
+            elif(record.topic =='Blocked'):
               self.block_handler(record.value)   
-            if(record.topic =='Area_Of_Interest'):
+            elif(record.topic =='Area_Of_Interest'):
               self.aoi_handler(record.value)
-            if(record.topic =='Client_Report'):
+            elif(record.topic =='Client_Report'):
               self.clirep_handler(record.value)
     
     # we are publishing the emergency message immediately after receiving.        
@@ -101,6 +104,12 @@ class MessageBroker:
     def moving_handler(self, message):
         print(message)
 
+    def echo_handler(self, message):
+        message = message.decode()
+        message = json.loads(message)
+        message['type'] = psm.UTILITY.TYPES.ECHO
+        self.publish(psm.UTILITY.BROKER_TOPIC, message)
+        
     def clirep_handler(self, message):
         # FIXME: Testing!
         return
@@ -203,8 +212,8 @@ class MessageBroker:
         threading.Timer(10,self.congestion_scheduler).start()
         
     def publish(self, topic, message):
-         print("the message published on topic %s is" % topic)
-         print(message)
+         #print("the message published on topic %s is" % topic)
+         #print(message)
          message = json.dumps(message)
          self.producer.send(topic, message.encode())
         
