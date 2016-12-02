@@ -1,6 +1,6 @@
-\section*{Introduction}
+\section{Introduction}
 
-Intelligent Transportation Systems (ITS)~\cite{ITS} is an emerging
+Intelligent Transportation Systems (ITS)~\cite{zhang2011data} is an emerging
 area that includes many ideas and mechanisms for improving the safety,
 quality of experience, and communication capabilities of
 commuters. One particularly important aspect of ITS is
@@ -23,58 +23,47 @@ actors in an ITS. Such pubsub systems can support peer-to-peer and
 infrastructure-sourced messages at scale~\cite{nasim2014mobile}.  While
 research has been done in the areas of VANET communication and
 mobility-aware publish/subscribe systems, holistic compositions of
-these technologies is lacking.  This paper introduces Mercury; a
-5G-based~\cite{5G} integration of pubsub systems and VANETs for rapid
-and reliable message transport.  Part of the holistic vision that
-Mercury espouses is mobility-specific geographic areas of interest
-(AOI). These areas map to slices of physical locality that are
-relevant to particular events.  For example, a traffic accident and
-resulting congestion are relevant to vehicles en route to the accident
-location, back past potential egresses to alternate routes.  Mercury
-takes into account such relationships to calculate the relevant dynamic
-set of vehicles for message transmission.
+these technologies is lacking.
+
+This paper introduces Mercury; a integration of pubsub systems and
+client endpoint mechanisms for low-latency message transport.  Part of
+the holistic vision that Mercury espouses is mobility-specific
+geographic areas of interest (AOI). These areas map to slices of
+physical locality that are relevant to particular events.  For
+example, a traffic accident and resulting congestion are relevant to
+vehicles en route to the accident location, back past potential
+egresses to alternate routes.  Mercury takes into account
+location-specific context to calculate the relevant dynamic set of
+vehicles for message transmission.
 
 This paper makes the following contributions:
 \begin{itemize}
 
-\item Integration of publish/subscribe systems with VANETs using 5G mechanisms.
+\item A holistic end-to-end messaging system design.
 
 The design of Mercury highlights the mechanisms by which
-publish/subscribe systems and VANETs can be combined in a 5G
-ecosystem. Message interception toward the pubsub broker, and
-injection toward the mobile vehicles is accomplished using SDN
-techniques over control and data paths in the EPS. Injected messages
-make use of multicast slots in the LTE radio access network (RAN) for
-efficient dissemination.  We also show how concepts such as
-CloudRAN~\cite{checko2015cloud} and mobile edge computing~\cite{mobile-edge}
-can further enable our system to operate within tighter latency bounds.
+publish/subscribe systems and mobile endpoints can be realized in 4G
+or 5G mobile network systems. Broker aggregation services communicate
+through Adapters to Client Endpoints at the edge. Mercury's design
+accommodates flexible deployment scenarios.
 
-\item Introduction of practical methods for determining areas of interest.
+\item A prototype implementation and evaluation of the Mercury ITS
+  messaging system.
 
-A road database is annotated with ingress and egress points, and
-boundaries for vehicle route placement.  Vehicles report their
-positions as part of the telemetery collected by the message
-distribution broker.  Together with context-specific details for event
-types (accident, obstruction in road, lane closure, emergency vehicle
-approaching, etc.), regions are dynamically computed.
-
-\item A design and prototype implementation, and evaluation of the
-  Mercury ITS messaging system.
-
-We implemented a prototype of Mercury and evaluated it on the
-PhantomNet~\cite{banerjee2015phantomnet} testbed.  This prototype makes use of
-OpenEPC~\cite{corici2010openepc} in the core network and Open Air Interface
-(OAI)~\cite{OAI} at the edge (RAN).  We drive the evaluation of Mercury
-using an adaptation of the SUMO~\cite{behrisch2011sumo} mobility model, and
-report on the former's scaling and latency characteristics.
+We implemented a prototype of the Mercury components and evaluated it
+on the PhantomNet~\cite{banerjee2015phantomnet} testbed.  This
+prototype makes use of OpenEPC~\cite{corici2010openepc} version 5,
+including its simplified emulated radio access network (RAN)
+environmnet. We drive the evaluation of Mercury with our own mobility
+simulator, and report on the former's functional and latency
+characteristics.
 
 \end{itemize}
 
 The remainder of this paper is organized as follows: Section 2 covers
-the design of the Mercury message handling system.  Section 3
-discusses the implementation of Mercury, including integration of the
-MoPS pubsub system and \emph{TAP}, our mechanism for interposing on
-EPS mobile control signalling and data flows for message delivery.
-Section 4 discusses our experimentation setup in Phantomnet and
-section 5 presents the results obtained.  Section 6 covers related
-work, and section 7 concludes.
+the design of the Mercury messaging system and how it can be adapted
+to different deployment scenarios.  Section 3 discusses the
+implementation of Mercury, including descriptions of data and state
+management. Section 4 discusses our mobility simulator and presents an
+evaluation of Mercury.  Section 6 covers related work, and section 7
+concludes.

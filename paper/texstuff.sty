@@ -1,0 +1,171 @@
+%% -*- mode: LaTeX -*-
+%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\NeedsTeXFormat{LaTeX2e}
+\def\fileversion{0.1}
+\def\filedate{2010/01/15}
+\ProvidesPackage{texstuff}[\filedate]
+\message{Style option: `texstuff' v\fileversion \space  <\filedate>}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Declare and process the style options.  These options control various
+%% document format and text features.
+%%
+%% By default, we assume that we're producing the ``final'' version of the
+%% document.  I.e., all of these `ifs' are false by default.
+%%
+\newif\ifdraft
+\draftfalse
+\newcommand{\draftonly}[1]{\ifdraft{#1}\fi}
+\DeclareOption{draft}{\drafttrue}
+
+\newif\ifpreprint
+\preprintfalse
+\newcommand{\preprintonly}[1]{\ifpreprint{#1}\fi}
+\DeclareOption{preprint}{\preprinttrue}
+
+\DeclareOption{final}{\draftfalse\preprintfalse}
+
+\newif\iftechreport
+\techreportfalse
+\newcommand{\techreportonly}[1]{\iftechreport{#1}\fi}
+\DeclareOption{techreport}{\techreporttrue}
+
+%% `\ifpdf' is defined by the `ifpdf' package.
+
+\newif\ifwww
+\wwwfalse
+\newcommand{\wwwonly}[1]{\ifwww{#1}\fi}
+\DeclareOption{www}{\wwwtrue}
+
+\ProcessOptions
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ifwww
+  \usepackage[tex4ht,html]{tex4ht}
+\else
+%  \usepackage{sigplanconf-hacks}
+\fi
+
+%\usepackage{fancyvrb}
+%\usepackage[T1]{fontenc} % ...so we can get curly braces in Helvetica.
+%\usepackage[final]{graphicx}
+%\usepackage{ifpdf}
+%\usepackage{paralist}
+% \usepackage{rcs}
+%\usepackage{url}
+%% The following must come *after* the `\urldef's:
+% \usepackage{hyperref}
+
+%% Use the Times, Helvetica, and Computer Modern Typewriter typefaces.
+%% Set `b' as the boldface series to avoid font shape warnings from LaTeX.
+%%
+\renewcommand{\rmdefault}{ptm}
+\renewcommand{\sfdefault}{phv}
+\renewcommand{\ttdefault}{cmtt}
+\renewcommand{\bfdefault}{b}
+%
+\usepackage{mathptmx}
+\usepackage[final]{microtype}
+
+%% Use `.jpg' and `.png' graphic files in the WWW versions of this paper. 
+\ifwww 
+  \DeclareGraphicsExtensions{.jpg,.png} 
+\fi 
+
+%% Define some relevant URLs.
+%\urldef{\fluxurl}\url{http://www.cs.utah.edu/flux/}
+% Without http://, this doesn't make a working link in the WWW version:
+%  \urldef{\emulaburl}\url{www.emulab.net}
+% so define it differently:
+\newcommand{\emulaburl}{\href{http://www.emulab.net/}{www.emulab.net}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Define certain tags used by the `\autoref' command.  (`\autoref' is provided
+%% as part of the `hyperref' package.)
+%%
+%% These words are `\mbox'ed to prevent line breaks within them, because PDF
+%% doesn't allow line breaks in hyperlinks.  So, without the box, we may get
+%% different line breaks in PS- and PDF-targeted documents.  (BTW, don't use
+%% `\hbox', because the box may start a paragraph.  See Exercise 13.1 in
+%% _The_TeXbook_.)  Actually, even with the boxes, we may *still* get slightly
+%% different line breaks in PS- and PDF-targeted output, but not very
+%% different, and at least the linebreaks don't fall in the reference words.
+
+\newcommand{\chapterautorefname}{\mbox{Chapter}}
+\newcommand{\sectionautorefname}{\mbox{Section}}
+\newcommand{\subsectionautorefname}{\sectionautorefname}
+\newcommand{\subsubsectionautorefname}{\sectionautorefname}
+\newcommand{\figureautorefname}{\mbox{Figure}}
+\newcommand{\subfigureautorefname}{\figureautorefname}
+\newcommand{\tableautorefname}{\mbox{Table}}
+\newcommand{\appendixautorefname}{\mbox{Appendix}}
+% \newcommand{\itemautorefname}{\mbox{item}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Tweak the float placement rules to be very liberal.
+%%
+\renewcommand{\topfraction}{1}
+\renewcommand{\dbltopfraction}{1}
+\renewcommand{\bottomfraction}{1}
+\renewcommand{\textfraction}{0}
+%
+\renewcommand{\floatpagefraction}{.90} % for one-column
+\renewcommand{\dblfloatpagefraction}{.90} % for two-.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Ick: tweak the definitions of the `asparadesc' and `asparaitem' environments
+%% to indent subsequent paragraph within the description/item ``normally'' (by
+%% `\parindent').  Without this change, subsequent paragraphs are not indented
+%% at all.
+
+\def\asparadesc{%
+  \list{}{%
+    \labelwidth\z@
+    \labelsep.5em
+    \leftmargin\z@
+    \parsep\parskip
+    \itemsep\z@
+    \topsep\z@
+    \partopsep\parskip
+    \itemindent\parindent
+% Next line is new:
+    \listparindent\parindent
+    \advance\itemindent\labelsep
+    \let\makelabel\paradescriptionlabel}}
+\let\endasparadesc\endlist
+
+\def\@asparaitem@{%
+  \expandafter\list\csname\@itemitem\endcsname{%
+    \labelwidth\z@
+    \labelsep.5em
+    \leftmargin\z@
+    \parsep\parskip
+    \itemsep\z@
+    \topsep\z@
+    \partopsep\parskip
+    \itemindent\parindent
+% Next line is new:
+    \listparindent\parindent
+    \advance\itemindent\labelsep
+    \def\makelabel##1{##1}}}
+\let\endasparaitem\endlist
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% This must come *after* any `\urldef's.
+%% This must also come after the `\autoref' definitions, at least if one wants
+%% to define them with `\newcommand'.
+%%
+\usepackage{hyperref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% End of file.
