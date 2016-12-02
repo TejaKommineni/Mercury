@@ -1,0 +1,29 @@
+* More specific titles for intro slides
+
+* Never defined the problem distinctly
+  - how to spin problem description?
+
+* Move related work later
+  - More specific titles
+
+* Move after intro to Mercury, then tell about related work
+  - How we differ
+
+* Architecture figure is too busy
+  - Simpler version of arch figure (cartoon/toy)
+    - Show common components
+  - Or introduce existing components
+
+* Split architecture
+
+* Why have different deployments? Articulate.
+
+* Simplify deployment scenarios
+  - Not obvious what the differences are.
+
+* Figure for topics
+
+* Move animation first
+
+* Standardize on figures
+
