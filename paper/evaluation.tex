@@ -9,6 +9,54 @@
   \end{itemize}
 \item Types of evaluations to perform.
   \begin{itemize}
+  \item Functional:
+  %%% Functional Evaluation.
+  \begin{figure}[ht]
+   \begin{center}
+    \includegraphics[width=0.5\textwidth]{figs/simulated.png}
+    \caption{Mercury event simulation.}
+    \label{fig:simulated}
+   \end{center}
+  \end{figure}
+   %%% Functional Evaluation.
+  \begin{figure}[ht]
+   \begin{center}
+    \includegraphics[width=0.5\textwidth]{figs/aoi.png}
+    \caption{Mercury Area Of Interest.}
+    \label{fig:aoi}
+   \end{center}
+  \end{figure}
+  In order to verify Mercury we have written a Message Simulator that mimics
+  real time vehicular movement. This simulator provides us with two 
+  functionalities. Firstly it helps us in specifying the number of vehicles to
+  be instantiated within the system, their location and the speeds associated 
+  with them. Secondly we can use the simulator to mock an event at any given 
+  location. All the vehicles that are within the region of this mocked event 
+  publish a message to the Mercury Adapter about they sensing an event. 
+  
+  Using the Message Simulator we have verified the functionality of the system.
+  To do this we have initially set up ten vehicles in the simulated ecosystem.
+  Then mocked an event collision at location (5,2) with a radius of 2 as in 
+  Fig3. All the vehicles within this region have sensed the event and published 
+  a message to the Mercury. We have taken care that the number of vehicles that
+  sense the event and publish the messages to Message Adapter will be greater
+  than the threshold needed for the Message Broker to trigger an Area of 
+  Interest message. The AOI message from Message Broker is represented as 
+  bigger circle in the Fig4.
+
+  By the time AOI message from Message Broker has reached the vehicles we have
+  observed the vehicle which has sensed the event at location (6,2) has moved
+  away from the region. This vehicle didn’t receive any alert from Mercury. 
+  There were two other vehicles that are at location (3,5) and (8,6) and have
+  moved into the AOI calculated by Message Broker both these vehicles received
+  the message. And the three of four vehicles which have sensed the event were
+  still falling within the Message Broker’s AOI and have received an alert. 
+   
+  By this experiment we have verified that all the vehicles within the AOI of
+  Message Broker have received an alert irrespective of sensing the event and
+  those vehicles which are out of the AOI have not received the vehicle.
+
+  
   \item Functional: Endpoints connect and are tracked properly (handover).
   \item Functional: Areas of Interest are interpreted properly.
   \item Scaling: Run simulated/emulated scenarios with dozens of endpoints.
