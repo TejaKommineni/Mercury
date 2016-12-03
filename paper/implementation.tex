@@ -101,7 +101,27 @@ situation.
 
 \subsection{Pubsub service}
 
-  FIXME - Add a brief discussion on the pubsub setup/config.
+As mentioned in section~\ref{sec:design}, selected Apache Kafka as our pubsub
+component. It is a distributed streaming platform which lets users to publish 
+and subscribe to streams of records. Kafka is run as a cluster on one or more 
+servers. The Kafka cluster stores streams of records in categories called topics.
+Each record consists of a key, a value, and a timestamp. A topic is a category 
+or feed name to which records are published. In our case it is the event type.
+Topics in Kafka can be multi-subscribed; that is, a topic can have one or more 
+consumers that subscribe to the data written to it. In our implementation
+all the values written to a topic are listened by Message Broker. But, we could
+extend this to different service end points listening on the same topic.
+
+For each topic, the Kafka cluster maintains a partitioned log. Each partition 
+is an ordered, immutable sequence of records that is continually appended to a 
+structured commit log. The records in the partitions are each assigned a 
+sequential id number called the offset that uniquely identifies each record 
+within the partition. In our system we create a single partition for each topic.
+As within a partition order is maintained we can traverse through records using
+the offset of the record. Each partition is replicated across a configurable
+number of servers for fault tolerance. The Kafka cluster retains all published 
+records whether or not they have been consumed—using a configurable retention 
+period.
 
 \subsection{Mobile network messaging adapter}
 
@@ -195,7 +215,7 @@ also used between clients and applications for encoding the messages.
 % We may not have time/space to include any goal alignment text.
 %
 
-\com{
+\comment{
 \subsection{Design Goal Alignment}
 
 The remainder of the design section of the paper is dedicated to a
