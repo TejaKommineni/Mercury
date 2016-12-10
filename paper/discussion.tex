@@ -1,7 +1,73 @@
 \section{Discussion}
 
+The design of Mercury, the possible deployment scenarios it can
+accommodate and the evaluation of prototype implementation of Mercury
+clearly suggest that Mercury is a fit for both present and future
+Intelligent Transportation Systems. Yet, there are few areas where we
+can further improve to make Mercury more appealing. Below we discuss
+the areas that can be further focused upon:
+
+At present, Mercury uses AOI as a main primitive in delivering
+messages to the clients. Mercury Broker determines the AOI and this is
+processed by Message Adapter to deliver messages to respective UEs.
+The AOI that we are implementing or envisioned in this paper is based
+on the circle centered at a point with a given radius. Clearly, when
+we are using the circular region as metrics there could be vehicles
+which are not affected by the event yet receive the alert message from
+Mercury because of falling under this region. This is where we think
+AOI calculation should also add another dimension to its measurement
+namely direction. This comes from the basic concept that an event
+happening on one side of the road may or may not affect the vehicles
+moving on the other side of the road. Looking at the directions we can
+also detect collisions between vehicles using the reports they send to
+the system.  Hence, this is an interesting future work area.
+
+Presently, the Message Adapter doesn't implement major security
+measures when dealing with the messages that are moving in and out of
+system. We only check if the sender of the message has a session with
+Mercury and then forward it to the Mercury Broker. The verification
+that is done here can be further supplemented by other methods such
+as.. else, the miscreants could try to exploit this vulnerability by
+spoofing messages without sensing an event or in any other anticipated
+way that could generate profits to them or cause harm to others.
+
+Message Broker receives all the sensed events from Message Adapter and
+performs computation on them to determine AOI. Here, we can see that
+Message Broker depends on the incoming messages to figure out whether
+an incident/ event is happening. It doesn't have any other way to know
+about an event except for the incoming messages. But, if we have at
+close look at Mercury we also have another source of information that
+is the reports that are periodically sent by vehicles to the
+Mercury. If we can make the Message Broker intelligent enough to look
+at these reports and detect an event. It could further decrease the
+latency in the system and we could make more informed decisions a step
+before a threshold of vehicles get to sense this event and report it
+to the system. For example, all those vehicles which are in a region
+experiencing congestion move at a slow pace. Looking at the reports of
+the vehicles if we could detect the slowing down of vehicles in any
+region we can calculate AOI and send it to those vehicles without
+waiting for sensed messages from vehicles.
+
+Also, as mentioned in the design section about the possible different
+deployment scenarios. We could try to implement Mercury in these
+different scenarios and measure its performance. We could increase the
+performance by increasing parallelism in the system such as scaling
+Message Adapter and Message Broker. We could also take advantage of
+the consumer groups concept in the Apache Kafka that help us in
+instantiating multiple consumers on a single topic. This way all the
+messages that come to a single topic can also be processed by multiple
+consumer instances giving us high throughput. We can also take
+advantage of the retention period in the Kafka to go back in time and
+receive any alert if missed. This could probably be an interesting
+option to look at because vehicles may tend to lose connection to
+intermittently and when they establish connection again with the
+system they might be interested in listening those events that it
+missed.
+
+\comment{
 \begin{itemize}
 \item Lessons/insights extracted from design/implementation/evaluation.
 \item Future work.
 \item Limitations of approach.
 \end{itemize}
+}
