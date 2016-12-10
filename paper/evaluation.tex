@@ -62,12 +62,58 @@ the Message Broker’s AOI and have received an alert.
    
 Through this experiment we have verified that all the vehicles within the
 AOI of Message Broker have received an alert irrespective of sensing
-the event and those vehicles which are out of the AOI have not
-received the vehicle.
+the event and those vehicles which are out of the AOI did not receive it.
 
 \subsection{Latency Micro-benchmark}
 
-{\bf PUT STUFF HERE.}
+In order to assess the latency response of Mercury under load, we
+performed a micro-benchmark involving sending messages at
+progressively higher rates, end-to-end. To do this, we developed an
+client-side application, ``echorate'', that sends timestamped messages
+to the Broker. The Broker responds to these immediately, embedding the
+timestamp provided (similar to ICMP ping). The ``echorate'' app takes
+rate and total message count as arguments. For this evaluation, we
+took baseline measurements at 1 message per second over a one minute
+period, then at rates of 10 messages/second up through 1,000
+messages/second at roughly logarithmic rate increments. For each increment
+we increase the count such that the total test target run time is
+10 seconds.
+
+%%% RTT Latency graph
+\begin{figure}[ht]
+  \begin{center}
+    \includegraphics[width=0.5\textwidth]{figs/RTT.png}
+    \caption{Round trip time (RTT) as a function of message rate.}
+    \label{fig:RTT}
+  \end{center}
+\end{figure}
+
+The results are presented as a box-and-whisker plot in
+figure~\ref{fig:RTT}. Message rate appears as discrete values along
+the x-axis. Round trip time is plotted using a log scale on the
+y-axis. The dots indicate outliers. This graph shows that the minimum
+RTT our prototype manages is about 10 milliseconds. However, even at a
+rate of 10 messages/second, the RTT jumps by an order of
+magnitude. The response stays fairly flat at around 1 second through a
+rate of 500 messages/second. Somewhere between this latter rate and
+750 messages/second, the rate begins a linear climb.  This trend is a
+result of the Mercury components falling behind in message processing.
+As the quartile spread indicates at these higher rates, the RTT slowly
+creeps up as message processing continues to lag behind the incoming
+message rate.
+
+These results indicate that the prototype needs additional work to
+improve its throughput and responsiveness in order to meet the demand
+of realistic workloads while maintaining latency-sensitive message
+requirements.  Our prototype already uses parallel processing inside
+individual components to queue incoming messages.  However, message
+processing and sending is single-threaded.  We believe that the key to
+increasing throughput is to parallelize these tasks. Decreasing the
+RTT baseline message rate can be accomplished by reimplementing
+Mercury in a lower-level language where individual processing time
+contributions are easier to manage and processing overhead is
+generally lower.  Using real-time scheduler directives would likely
+also help. We leave such optimizations as future work.
 
 \comment{
 \begin{itemize}
