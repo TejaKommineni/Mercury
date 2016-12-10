@@ -1,0 +1,62 @@
+\section{Background}
+
+The mobile network ecosystem is complex, and host to a number of
+related efforts in providing context-specific messages between
+endpoints in an Intelligent Transportation System environment. Before
+we discuss the design and implementation of Mercury, we discuss it in
+the context of prior work. In addition, we provide backround on the
+3GPP 4G Evolved Packet System~\cite{4G}, which is an important and
+widely used mobile networking ecosystem that we position Mercury
+within.
+
+\subsection{Mercury In Context}
+
+\textbf{DISCUSS CONTRIBUTION WITHIN RELATED WORK CONTEXT HERE.}
+
+\subsection{Mobile Networking Ecosystem}
+
+Mercury is primarily framed in the context of the 3GPP 4G and emerging
+5G mobile networking architectures. Therefore, we provide some
+background on these systems.  The vast majority of mobile carriers
+utilize these Evolved Packet Systems (EPS)~\cite{mobile-stats}, making
+them an especially relevant environment in which to operate a mobile
+messaging system.  Note that Mercury is also amenable to other
+mobility-friendly network architectures, such as
+MobilityFirst~\cite{mobility-first}, but we focus the discussion in
+this paper on the 3GPP EPS.  The 4G system has been in active
+deployment since 2008~\cite{chen2015financial}, and has undergone a
+number of revisions. Also in play in some deployment scenarios (see
+section~\ref{sec:deployments}) are software defined infrastructure
+concepts that are expected to be prominent components in the upcoming
+5G EPS~\ref{5gvision}.
+
+The 4G EPS includes the following key service functions relevant to
+Mercury: Mobility Managment Entity (MME), Home Subscriber Service
+(HSS), Serving Gateway (SGW), Packet Data Network Gateway (PDN-GW or
+more commonly PGW), evolved NodeB (eNodeB), and User Equipment (UE).
+We will briefly describe the role of each of these components, and
+their relationships with one another and with Mercury. The Mercury
+architecture diagram in figure~\ref{fig:arch} shows Mercury
+components in the context of a 4G EPS.
+
+We will briefly cover the 4G components next. \textbf{User Equipment
+  (UE)} typically refers to end user devices such as mobile phones,
+tablets, and 4G radio equipped laptops. The Mercury Endpoint component
+runs on these. The \textbf{Mobility Management Entity (MME)} is the 4G
+control plane function responsible for tracking the live (dynamic)
+session state for UEs. The \textbf{Home Subscriber Service (HSS)} is
+essentially a database of user (subscriber) information. The
+\textbf{Serving Gateway (SGW)} is the first data tunnel anchor point
+that UE sessions connect through (GTP tunnels). The \textbf{Packet
+  Data Network Gateway (PGW)} act as the egress point for a large
+number of UE data bearers (GTP tunnels); they fan out to multiple
+SGWs.  \textbf{Evolved NodeB (eNodeB)} devices are the wireless access
+points of the 4G EPS. They bridge the radio access network (RAN)
+through which the mobile endpoints (UEs) directly communicate with the
+evolved packet core (EPC). GTP tunnels are established for each UE
+between the eNodeB it is associated with and an upstream SGW.  The
+eNodeB also initiates session setup and default data bearer
+establishment when UEs attach, acting as a proxy for UE to MME
+control plane signalling. eNodeBs covering adjacent cells coordinate
+through the MME and possibly with one another to accomplish handover
+as endpoints move.

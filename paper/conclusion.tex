@@ -1,3 +1,17 @@
 \section{Conclusion}
 
-{\bf A conclusion on the marvelous Mercury messaging mechanism goes here.}
+We have presented Mercury, an end-to end mobility centric messaging
+system that improves safety within the vehicular environment. We have
+looked at the architecture and different components of Mercury. We
+have discussed the different deployment scenarios and how Mercury can
+fit in each of them. We also analyzed the need of a pubsub system in
+this environment and our choice to use Kafka for the
+implementation. We evaluated our prototype Mercury implementation in a
+4G deployment context. A vehicle simulator was written to test
+functional correctness, and a synthetic echo application was used to
+evaluate rount trip time latency performance. We conclude that the
+prototype is functionally accurate, but requires additional
+parallelism and tuning to meet latency requirements for realistic
+workloads. We have also considered how adding a direction based metric
+to this system would make it more precise and how we can incorporate
+more trust into Mercury so that it is not misused.
