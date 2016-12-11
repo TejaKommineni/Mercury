@@ -6,11 +6,7 @@ Endpoints communicate with the Adapter over UDP. Client-side
 applications using Mercury communicate over the local loopback with
 the Client Endpoint process. Service Endpoints use \pubsub to
 communicate with the Broker and talk to Clients via
-Adapter(s). Figure~\ref{fig:implementation} shows our prototype
-implementation, including labeled communication channels. Note that we
-chose the centralized (via-PGW) deployment scenario as our target for
-the prototype implementation.  All Mercury components are written in Python,
-aside from the unmodified \pubsub pubsub software.
+Adapter(s).
 
 \subsection{The messages and events}
 

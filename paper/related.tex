@@ -1,4 +1,4 @@
-\section{Related Work}
+\subsection{Related Work}
 
 There has been plenty of attention paid to effecient and reliable
 delivery of messages within VANETs.  Much of this focuses on multi-hop
@@ -6,17 +6,52 @@ clustering and hybrid use of evolved packet system RAN (LTE).  The
 VMaSC~\cite{ucar2016multihop}, MDMAC~\cite{wolny2008modified}, and
 NHop~\cite{zhang2011novel} systems attempt to form stable mobile
 802.11p clusters, using the LTE network to bridge between disconnected
-clusters. These systems are complimentary to Mercury in that they can
-be used to reduce LTE resource contention and improve reliable
-transfer of messages.
+clusters. These solutions largely ignore the details of the mobile
+core network, glossing over questions of component placement and the
+resulting effects on latency. Moreover, these systems are
+complimentary to Mercury in that they can be used to reduce LTE
+resource contention and improve reliable transfer of messages. Such
+integration would however come at the cost of additional complexity,
+failure modes, and latency due to additional network path segments.
 
-The MoPS~\cite{nasim2014mobile} publish-subscribe system scales
+From the publish-subscribe perspective, there is a large volume of
+prior work on traditional pubsub mechanisms~\cite{ps1,ps2,ps3,ps4}.
+This work is complementary to ours since it focuses on the useful
+aspects of pubsub, which we largely wish to reuse. There has also been
+work on pubsub systems focused on mobile endpoints. The
+MoPS~\cite{nasim2014mobile} publish-subscribe system scales
 efficiently for large numbers of clients and deals well with changing
 broker association.  Mercury could replace the \pubsub system used in
-the prototype with MoPS to better target mobile endpoints. MoPS does
-not include the area of interest concept, which would continue to be
-handled by the Mercury broker. A paper by Pongthawornkamol et
-al~\cite{pongthawornkamol2007analysis} looks at pubsub in the context
-of ad hoc wireless networks, but only performs simulations of
-mechanisms, and does not consider an end-to-end system.
+the prototype with MoPS to better target mobile endpoints. However,
+MoPS does not include the area of interest concept, which would
+continue to be handled by the Mercury broker. A paper by
+Pongthawornkamol et al~\cite{pongthawornkamol2007analysis} looks at
+pubsub in the context of ad hoc wireless networks. However, this work
+only performs simulations of mechanisms, and does not consider a
+larger top-down vantage point (important for coordination in a large
+ITS).
 
+Location-aware messaging, or geo-routing, in vehicular networks has
+been studied fairly extensively~\cite{bilal2013position}.
+Nevertheless, we find that most work has only proposed and simulated
+mechanisms. Furthermore, many studies look at ad hoc networks and
+fine-grained positioning of endpoints within vehicle clusters.  While
+such mechanisms may be helpful for real-time collision avoidance, we
+argue that they tend to be overly complex and unnecessarily constrain
+the communication domain to clusters of endpoints versus a central
+system with a global view. The argument against centralized systems is
+frequently that mobile networks are overloaded, but this does not hold
+up in current 4G and upcoming 5G environments~\cite{overload}.
+
+The related work outline above focuses on particular aspects of
+messaging.  To the best of our knowledge, no messaging system targeted
+at mobile endpoints simultaneously incorporates aspects we consider
+crucial to a holistic messaging platform for Intelligent
+Transportation Systems.  Such a system should enable a global view of
+endpoints to facilitate coordinated decision-making with complete
+data. It should take advantage of mobile network environment
+mechanisms (e.g. eMBMS) to reduce overhead and latency. It should
+consider the placement of components within the mobile network and the
+impact of this placement.  Finally, an ITS messaging system should
+provide a location-aware addressing mechanism. The Mercury messaging
+system is designed with all of these aspects in mind.
