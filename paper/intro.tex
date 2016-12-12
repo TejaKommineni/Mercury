@@ -51,12 +51,12 @@ stability, reachability, and security.
 
 This paper introduces \name; a integration of pubsub systems and
 client endpoint mechanisms for low-latency message transport.  Part of
-the holistic vision that \name espouses is mobility-specific
+the holistic vision that \name~espouses is mobility-specific
 geographic areas of interest (AOI). These areas map to slices of
 physical locality that are relevant to particular events.  For
 example, a traffic accident and resulting congestion are relevant to
 vehicles en route to the accident location, back past potential
-egresses to alternate routes.  \name takes into account
+egresses to alternate routes.  \name~takes into account
 location-specific context to calculate the relevant dynamic set of
 vehicles for message transmission.
 
@@ -65,33 +65,33 @@ This paper makes the following contributions:
 
 \item A holistic end-to-end messaging system design.
 
-The design of \name highlights the mechanisms by which
+The design of \name~highlights the mechanisms by which
 publish/subscribe systems and mobile endpoints can be realized in 4G
 or 5G mobile network systems. Broker aggregation services communicate
 through Adapters to Client Endpoints at the edge. \name's design
 accommodates flexible deployment scenarios.
 
-\item A prototype implementation and evaluation of the \name ITS
+\item A prototype implementation and evaluation of the \name~ITS
   messaging system.
 
-We implemented a prototype of the \name components and evaluated it
+We implemented a prototype of the \name~components and evaluated it
 on the PhantomNet~\cite{banerjee2015phantomnet} testbed.  This
 prototype makes use of OpenEPC~\cite{corici2010openepc} version 5,
 including its simplified emulated radio access network (RAN)
-environmnet. We drive the evaluation of \name with our own mobility
+environmnet. We drive the evaluation of \name~with our own mobility
 simulator, and report on the former's functional and latency
 characteristics.
 
 \end{itemize}
 
 The remainder of this paper is organized as follows: Section 2 covers
-background, including putting \name into context within related
+background, including putting \name~into context within related
 work, introducing mobile networking environment concepts, and
 describing the vehicular endpoing context. Section 3 provides an
 overview of the design goals and components of \name, while section
 4 delves into the details of the design. Section 5 looks at how
-\name can be positioned within different mobile networking
-deployments.  Section 6 briefly discusses the \name prototype
+\name~can be positioned within different mobile networking
+deployments.  Section 6 briefly discusses the \name~prototype
 implementation. We cover our vehicle simulator and provide an
 evaluation of the prototype in section 7. Section 8 discusses
 observations resulting from the design and implementation of \name,

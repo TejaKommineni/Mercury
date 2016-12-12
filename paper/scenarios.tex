@@ -5,17 +5,17 @@
 \begin{figure*}[ht]
   \centering
   \includegraphics[width=\textwidth]{figs/deploy.png}
-  \caption{\name deployment scenarios.}
+  \caption{\name~deployment scenarios.}
   \label{fig:deployments}
 \end{figure*}
 
-A key aspect of the \name design is adaptability to different mobile
+A key aspect of the \name~design is adaptability to different mobile
 network deployments and architectures. Endpoints, broker, and pubsub
 components are all mobile-environment agnostic. Mobile endpoint
-identity is specific to the \name messaging system. One of the message
+identity is specific to the \name~messaging system. One of the message
 adapter's primary functions is to separate the concerns of the
 messaging system with the routing of messages inside the mobile
-network.  \name requires a low-latency vantage point near the mobile
+network.  \name~requires a low-latency vantage point near the mobile
 network edge. Message adapters, pubsub, and broker all need to reside
 at this vantage point.  Such proximity allows for message delivery to
 meet timing requirements.  Distance to endpoints incurs a tradeoff between
@@ -67,13 +67,13 @@ Further switch/router hops within the data center should not
 appreciably add to the latency. Egress through SGW/PGW can add another
 5~ms of one-way delay.  Total mobile network
 infrastructure RTT is thus bounded to 40~ms. This leaves 10~ms for
-\name components to process messages for low-latency
+\name~components to process messages for low-latency
 vehicle-to-vehicle coordination (within 50 ms).
 
-In this deployment, the \name message adapter, pubsub, and broker
+In this deployment, the \name~message adapter, pubsub, and broker
 all reside alongside the PGW in the local metro data center. The
 message adapter and mobile endpoints communicate using native network
-addresses (i.e. IPv4 or IPv6).  \name components communicate via the
+addresses (i.e. IPv4 or IPv6).  \name~components communicate via the
 data center pubsub deployment. The endpoints can obtain the address
 of their associated message adapter using DNS, DHCP options, or
 multicast query.
@@ -85,7 +85,7 @@ centralized upstream network egress location in a particular metro
 area of interest. Further, PGW nodes are typically deployed at a
 handful of national data centers.  Total one-way latency to egress
 through a PGW in such deployments is often over
-50~ms~\cite[Chapter~7]{grigorik2013high}. Installing \name at these national
+50~ms~\cite[Chapter~7]{grigorik2013high}. Installing \name~at these national
 data centers would impair its ability to meet SLAs for some classes of
 low-latency messages (see table~\ref{tab:lat-req}). Many mobile
 carriers, however, concentrate regional connectivity at a Mobile
@@ -93,27 +93,27 @@ Telephone Switching Office (MTSO).  Typical one-way latency from
 eNodeB to MTSO is 10~ms~\cite{cho2014smore}. With LTE RAN latency
 added, the one way latency between MTSO and UE is about 20~ms.
 
-Deployed into a MTSO, \name message adapters can interpose on GTP
+Deployed into a MTSO, \name~message adapters can interpose on GTP
 data bearers for UEs in the same way that SMORE~\cite{cho2014smore}
 does. Alternatively, lower-capacity (thus cheaper) combined SGW/PGW
 functions may be deployed into the MTSO. This would allow the provider
-to setup dedicated bearers for services such as \name in a MTSO
-location.  Using these options, \name can operate with slightly
+to setup dedicated bearers for services such as \name~in a MTSO
+location.  Using these options, \name~can operate with slightly
 higher RTT compared to metropolitan data center deployments.  However,
 the additional latency may not meet the latency requirements for some
 UE-to-UE (vehicle-to-vehicle) applications.
 
 \subsection{Mobile edge 4G/5G deployments}
 
-\name can be altered to run at the network edge, on the mobile
+\name~can be altered to run at the network edge, on the mobile
 wireless access points.  If a deployment includes the ability for
 running services on the eNodeB (or equivalent) access points, then
-\name can operate using peer-to-peer semantics.  All components of
-\name would run on each eNodeB, and some service endpoints as
+\name~can operate using peer-to-peer semantics.  All components of
+\name~would run on each eNodeB, and some service endpoints as
 well. The pubsub is extended to form a connectivity mesh between
 adjacent eNodeBs. \name's scope at each eNodeB is smaller, and so
 the amount of processing is reduced. When a message destination is an
-area of interest, the local \name broker determines whether parts of
+area of interest, the local \name~broker determines whether parts of
 this area lie outside of its coverage.  If so, it sends such messages
 along (via pubsub mesh) to neighboring eNodeBs. These handle their
 portion of the endpoints in the AOI.  Arbitrary consumer content
@@ -130,11 +130,11 @@ heads (RRH) connected to base band units (BBUs).  The latter are
 located in nearby compute aggregation locations; RRH and BBU functions
 can only be about 25~km apart in order to maintain the closed control
 loop between them. BBU functionality in a compute location serves
-multiple RRH units. \name components would be deployed into the
+multiple RRH units. \name~components would be deployed into the
 compute locations in this case.  Multiple such compute locations may
-serve an area. \name could be deployed to each with a peer-to-peer
+serve an area. \name~could be deployed to each with a peer-to-peer
 pubsub mesh setup between them.  Similar very low latency messaging is
-possible in this scenario with a \name message adapter working with
+possible in this scenario with a \name~message adapter working with
 the BBUs at its location.  An additional advantage is that the very
 low latency messaging extends to the (larger) area covered by all
 associated RRH units.

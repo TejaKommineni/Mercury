@@ -1,20 +1,20 @@
 \section{Discussion}
 
 The design of \name, the possible deployment scenarios it can
-accommodate and the evaluation of prototype implementation of \name
-clearly suggest that \name is a fit for both present and future
+accommodate and the evaluation of prototype implementation of \name~
+clearly suggest that \name~is a fit for both present and future
 Intelligent Transportation Systems. Yet, there are few areas where we
-can further improve to make \name more appealing. Below we discuss
+can further improve to make \name~more appealing. Below we discuss
 the areas that can be further focused upon:
 
-At present, \name uses AOI as a main primitive in delivering
-messages to the clients. \name Broker determines the AOI and this is
+At present, \name~uses AOI as a main primitive in delivering
+messages to the clients. \name~Broker determines the AOI and this is
 processed by Message Adapter to deliver messages to respective UEs.
 The AOI that we are implementing or envisioned in this paper is based
 on the circle centered at a point with a given radius. Clearly, when
 we are using the circular region as metrics there could be vehicles
 which are not affected by the event yet receive the alert message from
-\name because of falling under this region. This is where we think
+\name~because of falling under this region. This is where we think
 AOI calculation should also add another dimension to its measurement
 namely direction. This comes from the basic concept that an event
 happening on one side of the road may or may not affect the vehicles
@@ -25,7 +25,7 @@ the system.  Hence, this is an interesting future work area.
 Presently, the Message Adapter doesn't implement major security
 measures when dealing with the messages that are moving in and out of
 system. We only check if the sender of the message has a session with
-\name and then forward it to the \name Broker. The verification
+\name~and then forward it to the \name~Broker. The verification
 that is done here can be further supplemented by other methods such
 as.. else, the miscreants could try to exploit this vulnerability by
 spoofing messages without sensing an event or in any other anticipated
@@ -36,7 +36,7 @@ performs computation on them to determine AOI. Here, we can see that
 Message Broker depends on the incoming messages to figure out whether
 an incident/ event is happening. It doesn't have any other way to know
 about an event except for the incoming messages. But, if we have at
-close look at \name we also have another source of information that
+close look at \name~we also have another source of information that
 is the reports that are periodically sent by vehicles to the
 \name. If we can make the Message Broker intelligent enough to look
 at these reports and detect an event. It could further decrease the
@@ -49,7 +49,7 @@ region we can calculate AOI and send it to those vehicles without
 waiting for sensed messages from vehicles.
 
 Also, as mentioned in the design section about the possible different
-deployment scenarios. We could try to implement \name in these
+deployment scenarios. We could try to implement \name~in these
 different scenarios and measure its performance. We could increase the
 performance by increasing parallelism in the system such as scaling
 Message Adapter and Message Broker. We could also take advantage of
