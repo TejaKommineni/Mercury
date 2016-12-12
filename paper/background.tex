@@ -3,10 +3,10 @@
 The mobile network ecosystem is complex, and host to a number of
 related efforts in providing context-specific messages between
 endpoints in an Intelligent Transportation System environment. Before
-we discuss the design and implementation of Mercury, we discuss it in
+we discuss the design and implementation of \name, we couch it in
 the context of prior work. In addition, we provide backround on the
 3GPP 4G Evolved Packet System~\cite{4G}, which is an important and
-widely used mobile networking ecosystem that we position Mercury
+widely used mobile networking ecosystem that we position \name
 within.
 
 %
@@ -16,33 +16,33 @@ within.
 
 \subsection{Mobile Networking Ecosystem}
 
-Mercury is primarily framed in the context of the 3GPP 4G and emerging
+\name is primarily framed in the context of the 3GPP 4G and emerging
 5G mobile networking architectures. Therefore, we provide some
 background on these systems.  The vast majority of mobile carriers
-utilize these Evolved Packet Systems (EPS)~\cite{mobile-stats}, making
-them an especially relevant environment in which to operate a mobile
-messaging system.  Note that Mercury is also amenable to other
-mobility-friendly network architectures, such as
-MobilityFirst~\cite{mobility-first}, but we focus the discussion in
-this paper on the 3GPP EPS.  The 4G system has been in active
-deployment since 2008~\cite{chen2015financial}, and has undergone a
-number of revisions. Also in play in some deployment scenarios (see
-section~\ref{sec:deployments}) are software defined infrastructure
-concepts that are expected to be prominent components in the upcoming
-5G EPS~\ref{5gvision}.
+utilize these Evolved Packet Systems (EPS), making them an especially
+relevant environment in which to operate a mobile messaging system.
+Note that \name is also amenable to other mobility-friendly network
+architectures, such as MobilityFirst~\cite{raychaudhuri2012mobilityfirst}, 
+but we
+focus the discussion in this paper on the 3GPP EPS.  The 4G system has
+been in active deployment since 2008~\cite{chen2015financial}, and has
+undergone a number of revisions. Also in play in some deployment
+scenarios (see section~\ref{sec:deployments}) are software defined
+infrastructure concepts that are expected to be prominent components
+in the upcoming 5G EPS~\cite{5gvision}.
 
 The 4G EPS includes the following key service functions relevant to
-Mercury: Mobility Managment Entity (MME), Home Subscriber Service
+\name: Mobility Managment Entity (MME), Home Subscriber Service
 (HSS), Serving Gateway (SGW), Packet Data Network Gateway (PDN-GW or
 more commonly PGW), evolved NodeB (eNodeB), and User Equipment (UE).
 We will briefly describe the role of each of these components, and
-their relationships with one another and with Mercury. The Mercury
-architecture diagram in figure~\ref{fig:arch} shows Mercury
+their relationships with one another and with \name. The \name
+architecture diagram in figure~\ref{fig:arch} shows \name
 components in the context of a 4G EPS.
 
 We will briefly cover the 4G components next. \textbf{User Equipment
   (UE)} typically refers to end user devices such as mobile phones,
-tablets, and 4G radio equipped laptops. The Mercury Endpoint component
+tablets, and 4G radio equipped laptops. The \name Endpoint component
 runs on these. The \textbf{Mobility Management Entity (MME)} is the 4G
 control plane function responsible for tracking the live (dynamic)
 session state for UEs. The \textbf{Home Subscriber Service (HSS)} is
@@ -64,4 +64,21 @@ as endpoints move.
 
 \subsection{The Vehicle Environment}
 
-\textbf{Discuss some of the important aspects of vehicles, suchs as sensors and such, here.}
+The environment of a vehicle endpoint is highly relevant context for
+drivers and passengers. We argue that traffic, safety issues, and
+proximity to resources are key to decision making in this
+setting. Therefore, related telemetry such as position, speed, and
+direction should be relayed for analysis. Vehicle \emph{position} is
+almost universally measured using GPS~\cite{misra2006global}.
+Although known radio access points can be used for rough localization,
+such positions are often too coarse-grained.  In fact, a better system
+would make use of computer vision and/or static environmental sensors
+to extract lane position, relative distances to other vehicles, etc.
+Our work uses GPS coordinates and leaves more fine-grained placement
+techniques to future work. \emph{Speed} is to be collected by vehicle
+speedometers, or through monitoring of accelerometers such as are
+found in most smart phones. Finally, to acquire \emph{direction},
+digital compass readings can be gathered from smart phones and are
+also available in many onboard vehicle systems.  We expect that
+environmental sensors will grow in sophistication and accuracy through
+the proliferation of self-driving cars and ITS.

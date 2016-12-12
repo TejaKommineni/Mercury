@@ -13,4 +13,4 @@ paper.pdf: biblio.bib $(TEXSRC)
 	pdflatex paper
 
 clean: 
-	\rm -f *.dvi *.aux *.ps *~ *.log *.blg *.bbl paper.pdf
+	\rm -f *.dvi *.aux *.ps *~ *.log *.blg *.bbl *.out paper.pdf

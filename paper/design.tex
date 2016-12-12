@@ -1,4 +1,5 @@
 \section{Design Overview}
+\label{sec:design}
 
 Delivering messages, important and casual, to mobile users and
 endpoints that are interested in them is the overarching premise of
@@ -21,7 +22,7 @@ event (vehicle accident ahead).
 Message intent drives content delivery requirements.  For example,
 different types of emergency service messages have been identified for
 VANETs, each having distinct latency
-requirements~\cite{vanet-msg-reqs}. The service should strive to
+requirements~\cite{camp2005vehicle}. The service should strive to
 minimize latency to provide on-time delivery with headroom for outlier
 delays. Messages should be categoriezed according to their relative
 importance and processed accordingly (e.g., emergency info before
@@ -53,61 +54,121 @@ important.
 
 \end{itemize}
 
-We next describe the components of the Mercury messaging system, along
+We next describe the components of the \name messaging system, along
 with how they fit into the 3GPP 4G mobile networking architecture.
 
 %%% ARCHITECTURE FIGURE
 \begin{figure*}[ht]
   \centering
   \includegraphics[width=0.8\textwidth]{figs/mercury-arch.png}
-  \caption{Mercury architecture diagram (in 4G mobile network context)}
+  \caption{\name architecture diagram (in 4G mobile network context)}
   \label{fig:arch}
 \end{figure*}
 
-\subsection{Mercury Components}
+\subsection{\name Components}
 
-Mercury is comprised of four essential components: message broker,
+\name is comprised of four essential components: message broker,
 publish/subscribe system, message adapter, and endpoints.  These
 components are visible in the architecture diagram in
-figure~\ref{fig:arch}. This diagram shows the Mercury components
+figure~\ref{fig:arch}. This diagram shows the \name components
 in the context of a 4G mobile network (the latter will be described
-after Mercury is covered).
+after \name is covered).
 
-%Mercury makes use of the \pubsub pubsub system. Much work has been
-%done on pubsub systems, and it is not the aim of this work to provide
-%novel pubsub mechanisms. \pubsub provides ... {\bf discuss desirable
-%  attributes, such as scaling, performance, community support, and
-%  rich subscription capabilities, and how they are relevant}.
+\subsubsection{Message Broker}
+
+\name's message broker is the brain center of the messaging
+system. It processes all incoming messages and sends these to relevant
+endpoints (via \pubsub). The broker calculates Areas of Interest (see
+section~\ref{sec:aoi}) for certain message types (e.g., emergency
+notifications).  Data analysis (aggregated decisions, client
+statistics, etc.) occur at the broker. It does not concern itself with
+how to get the messages to the target endpoint(s); that job falls to
+the \name message adapter.
 
 \subsubsection{Publish/Subscribe System}
 
-Within Mercury we need pub-sub system for communication of different entities. 
-This requirement directly arises from the need for each vehicle to send and 
-listen to particular types of messages. Pub-Sub systems are elegant for these 
-activities we can publish and subscribe to different events. In our system a 
-vehicle(UE/Client), Message Broker publish and subscribe to events. This is when
-we have started for a quest of an effective pub-sub system. The table{\bf insert
-the comparison table for pub-sub systems} shows the comparison of different 
-pub-sub systems. Below we describe the differences between pub-systems in detail
-and different design decisions that went in for choosing a pub-sub system for
-mercury.
- 
-Mercury needs a pub-sub system that can serve high number of events
-with low latency. This is because of the environment in which mercury
-operates.  We have many UE/clients at any given point that interact
-with the system and for them to effectively respond to a situation we
-need to dissipate the message at the earliest. Making the things even
-harder our clients are mobile which means they could intermittently
-loose connection with the pub-sub system which has to be
-re-established. Among those considered, Apache Kafka had the best
-combination of low-latency and message queueing for recovering lost
-messages.
+\name needs a pubsub system that can serve a high number of events
+with low latency. This is because of the environment in which it
+operates.  We have many agents/endpoints at any given point that
+interact with the system and for them to effectively respond to a
+situation we need to dissipate the messages quickly. The mobility of
+the clients creates the potential for intermitent loss of connectivity
+with the pubsub system which has to be re-established. Among the options
+considered, Apache Kafka had the best combination of low-latency and
+message queueing for recovering lost messages.
 
 At a high-level Kafka gives the following guarantees: Messages sent by a 
 producer to a particular topic partition will be appended in the order they are
 sent. A consumer instance sees records in the order they are stored in the log. 
 For a topic with replication factor N, kafka will tolerate up to N-1 server 
 failures without losing any records committed to the log.
+
+\subsubsection{Message Adapter}
+
+The \name message adapter is the conduit through which pubsub
+messages flow through to endpoints. The adapter coordinates sessions
+with client endpoints. It forwards client reports and other content to
+and from the pubsub. It also maintains pubsub topic subscriptions for
+the endpoints. The prototype implementation described in this
+paper targets the 4G EPC, but it is possible to target other mobile
+networking architectures with different adapters.
+
+\subsubsection{Endpoints}
+
+\name endpoints are the producers and consumers of most content in
+the messaging system. Client Endpoints run as applications on
+ITS-equipped vehicles.  They report in with telemetry, such as their
+current position and speed.  Client endpoints also subscribe to
+particular consumer messages identified by specified attributes.
+
+Service Endpoints may also be centralized services that connect to the
+pubsub, running at the same location as the Broker, and using the
+Broker's services. Examples include emergency notification processors,
+and consumer information aggregators (gas prices).
+
+\subsection{\name Messages}
+
+Messages are the principle and only communication mechanism in
+\name. There are two high-level flavors: control and
+content. Control messages include session handling (between broker and
+endpoints), broker to message adapter communication, and subscription
+management (endpoint to pubsub/broker).  Content messages are those
+relevant to applications running on endpoints, such as emergency
+alerts and consumer information (e.g. gas prices).  Periodic session
+maintenance messages are sent between the mobile endpoints and the
+\name Adapter to update status (location) and track liveness.
+
+%The broker likewise sends periodic
+%heartbeat messages toward all endpoints. These messages ensure clients
+%and broker stay in sync. Session handling also includes establishment
+%and teardown message exchange.  
+
+Content messages use structured 
+message attributes to signal category information. This allows content
+producer and consumer endpoints to steer messages to one another based
+on interests. Most messages (including client reports) flow through
+the pubsub system to the broker. This allows the Broker to perform
+data aggregation and analysis (triggers based on thresholds, for
+example).
+
+Message destination addressing in \name includes endpoint, content,
+and area of interest targetting. Endpoint addresses are primarily used
+for session setup and teardown. Content-specific addressing makes use
+of subscription attributes to deliver messages. AOI addresses are
+unique to the mobile environment. AOI bounds are computed by the
+broker. These bounds form the destination address. Message adapters
+check bounds to determine if their downstream area coverage is
+relevant before passing along, and endpoints check their position
+relative to the bounds.  In this way, \name allows messages to be
+``area multicasted.''  As we discuss in
+section~\ref{sec:design-details}, our prototype restricts itself to
+simple bounding models (radius). Complex spatial reasoning for
+improving relevancy is left for future work.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Old text on the pubsub that was too detailed.
+%
 
 \comment{
 Apache ActiveMQ\cite{activemq} is one of the oldest player
@@ -174,80 +235,3 @@ The Connector API allows building and running reusable producers or consumers
 that connect Kafka topics to existing applications or data systems. 
 We use Producer API and Consumer API extensively in our implementation.
 }
-
-{\bf Discuss how Mercury integrates with the pubsub.}
-
-\subsubsection{Message Broker}
-
-Mercury's message broker is the brain center of the messaging
-system. It processes all incoming messages and sends these to relevant
-endpoints (via \pubsub). The broker calculates Areas of Interest (see
-section~\ref{section:aoi}) for certain message types (e.g., emergency
-notifications).  Data analysis (aggregated decisions, client
-statistics, etc.) occur at the broker. It does not concern itself with
-how to get the messages to the target endpoint(s); that job falls to
-the Mercury message adapter.
-
-\subsubsection{Message Adapter}
-
-The Mercury message adapter is the conduit through which pubsub
-messages flow through to endpoints. The adapter coordinates sessions
-with client endpoints. It forwards client reports and other content to
-and from the pubsub. It also maintains pubsub topic subscriptions for
-the endpoints. The prototype implementation described in this
-paper targets the 4G EPC, but it is possible to target other mobile
-networking architectures with different adapters.
-
-\subsubsection{Endpoints}
-
-Mercury endpoints are the producers and consumers of most content in
-the messaging system. Client Endpoints run as applications on
-ITS-equipped vehicles.  They report in with telemetry, such as their
-current position and speed.  Client endpoints also subscribe to
-particular consumer messages identified by specified attributes.
-
-Service Endpoints may also be centralized services that connect to the
-pubsub, running at the same location as the Broker, and using the
-Broker's services. Examples include emergency notification processors,
-and consumer information aggregators (gas prices).
-
-\subsection{Mercury Messages}
-
-Messages are the principle and only communication mechanism in
-Mercury. There are two high-level flavors: control and
-content. Control messages include session handling (between broker and
-endpoints), broker to message adapter communication, and subscription
-management (endpoint to pubsub/broker).  Content messages are those
-relevant to applications running on endpoints, such as emergency
-alerts and consumer information (e.g. gas prices).  Periodic session
-maintenance messages are sent between the mobile endpoints and the
-Mercury Adapter to update status (location) and track liveness.
-
-%The broker likewise sends periodic
-%heartbeat messages toward all endpoints. These messages ensure clients
-%and broker stay in sync. Session handling also includes establishment
-%and teardown message exchange.  
-
-Content messages use structured 
-message attributes to signal category information. This allows content
-producer and consumer endpoints to steer messages to one another based
-on interests. Most messages (including client reports) flow through
-the pubsub system to the broker. This allows the Broker to perform
-data aggregation and analysis (triggers based on thresholds, for
-example).
-
-Message destination addressing in Mercury includes endpoint, content,
-and area of interest targetting. Endpoint addresses are primarily used
-for session setup and teardown. Content-specific addressing makes use
-of subscription attributes to deliver messages. AOI addresses are
-unique to the mobile environment. AOI bounds are computed by the
-broker. These bounds form the destination address. Message adapters
-check bounds to determine if their downstream area coverage is
-relevant before passing along, and endpoints check their position
-relative to the bounds.  In this way, Mercury allows messages to be
-``area multicasted.''  Mercury's design vision includes using spatial
-analysis techniques~\cite{sp-an1}~\cite{sp-an2} to create and test
-bounds.  As we discuss in the implementation section, the prototype
-restricts itself to simple bounding models (e.g., radius or current
-route). Complex spatial reasoning for improving relevancy is left for
-future work.

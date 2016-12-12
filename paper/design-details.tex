@@ -1,19 +1,20 @@
 \section{Design Details}
+\label{sec:design-details}
 
-Each Mercury component runs as a self-contained application. The
+Each \name component runs as a self-contained application. The
 Broker and Adapter(s) communicate over unmodified \pubsub. Client
 Endpoints communicate with the Adapter over UDP. Client-side
-applications using Mercury communicate over the local loopback with
+applications using \name communicate over the local loopback with
 the Client Endpoint process. Service Endpoints use \pubsub to
 communicate with the Broker and talk to Clients via
 Adapter(s).
 
 \subsection{The messages and events}
 
-The Mercury Broker we have implemented handles different types of events. 
+The \name Broker we have implemented handles different types of events. 
 Emergency Event, This is an event that is published by a vehicle when it senses
 an emergency situation. Any message indicating such an event is immediately 
-processed by the mercury broker and sends back an area of interest (AOI)
+processed by the \name broker and sends back an area of interest (AOI)
 that has to be alerted for this event.
 Moving Objects Event, This event indicates that there is an object that is 
 crossing a road. For such events, whenever a predicate calculated by scheduler 
@@ -23,21 +24,39 @@ Blocked. All, these events are handled similarly but they differ in two things.
 One is the predicate function and the second is the frequency at which the 
 schedulers run. Our system also supports an other type of event called 
 Area Of Interest. This is different from the aoi which is calculated by
-mercury broker. In this type of event the user is interested in knowing about 
+\name broker. In this type of event the user is interested in knowing about 
 the different events happening at a particular location. Whenever an event of 
-type area Of interest is received by the mercury broker. It interacts with 
+type area Of interest is received by the \name broker. It interacts with 
 different handlers and determines the bin for each event type in which the 
 requested aoi falls into. Then runs a predicate on these bins and learns about 
 the traffic conditions in that area which is communicated back to the user.
 
+\begin{table*}[ht]
+  \centering
+  \begin{tabular}{| l | l |}
+    \hline
+    \textbf{Field} & \textbf{Description} \\ \hline \hline
+    UUID & Unique identifier for message. \\ \hline
+    Session ID & Identifies session between Client and Adapter. \\ \hline
+    Message Type & Distinguishes intent (to/from Broker, PubSub, etc.) \\ \hline
+    Source Address & Client ID, Service ID, Broker, or Adapter. \\ \hline
+    Dest Address & Client ID, Service ID, Broker, Adapter, or AOI. \\ \hline
+    Topic & Indicates topic message goes to or came from (PubSub only). \\ \hline
+    KeyVal & Generic key-value \emph{pairs}. Telemetry and other data is encoded here. \\
+    \hline
+  \end{tabular}
+  \label{tab:mesgformat}
+  \caption{Message fields found inside individual \name messages.}
+\end{table*}
+
 Messages must fit into a single UDP packet (maximum of 64K).  Each is
 self contained, with required identifiers, addresses, and message
-payload.  There are two top-level types of messages in the Mercury
+payload.  There are two top-level types of messages in the \name
 system: session and pubsub.  Session messages are transmitted between
 Client Endpoints and associated Adapters.  Pubsub messages can
-essentially be exchanged between any Mercury components.
-Table~\ref{tab:mesgformat} shows the fields present in Mercury Session
-and PubSub messages. Each Mercury Address contains a destination and
+essentially be exchanged between any \name components.
+Table~\ref{tab:mesgformat} shows the fields present in \name Session
+and PubSub messages. Each \name Address contains a destination and
 source address.  The source address can be an Adapter, a specific
 Client, a Service, or the Broker.  The destination address can be any
 of those listed for source, and additionally may be a broadcast (all
@@ -47,7 +66,7 @@ applications. For example, emergency alerts published by the Broker
 may be consumed by an alert display application at the Client
 Endpoint.  Client Report message contain mobile telementry
 information: GPS location, direction, and speed. These reports have
-semantic meaning to Mercury, and so are tracked by the Client
+semantic meaning to \name, and so are tracked by the Client
 Endpoint, Adapter, and Broker components.  In our prototype
 implementation, the Broker has had emergency event message handling
 folded into it's logic.  Therefore, the prototype Broker also
@@ -59,7 +78,7 @@ application.
 \subsection{Areas of Interest}
 \label{sec:aoi}
 
-Mercury uses Area of Interest geo-addressing to target specific sets
+\name uses Area of Interest geo-addressing to target specific sets
 of Client Endpoints.  When the Broker wishes to send a message that is
 specific to a location context (e.g., a warning triggered from
 multiple collision reports), it embeds the desired geo-address as the
@@ -71,9 +90,9 @@ there is no overlap).  When an AOI-addressed message is received by a
 Client Endpoint, it checks its current location to determine if the
 message applies, and processes if so.
 
-\subsection{Mercury broker}
+\subsection{\name broker}
   
-Mercury Broker handles events in two steps: In the first step events
+\name Broker handles events in two steps: In the first step events
 published are passed on to the respective handlers where we have a
 filter that determines the different locations from which the feeds
 are coming in for that specific event.This will give us the messages
@@ -89,16 +108,26 @@ equal intervals based on the event type.  These schedulers empty the
 bins of their respective event and run a predicate on them which is a
 simple Boolean formula that checks for a condition.  A predicate is
 usually defined over some aggregation function expressed on messages;
-when the predicate evaluates to true, the mercury broker publishes an
+when the predicate evaluates to true, the \name broker publishes an
 event to the system with the center point and the radius which we have
 calculated for that bin. These are used to determine the area of
-interest(AOI), AOI is the region that is determined by the mercury
+interest(AOI), AOI is the region that is determined by the \name
 broker and constitutes all the clients that have to be alerted about a
 situation.
 
 \subsection{Pubsub service}
 
-As mentioned in section~\ref{sec:design}, selected Apache Kafka as our pubsub
+Within \name we require a publish-subscribe system for communication
+between different entities.  This requirement directly arises from the
+need for each vehicle to send and listen to particular types of
+messages. Pubsub systems are well-suited for these activities as we
+can publish and subscribe to different events. In our system
+components such as Client Endpoints and the Message Broker publish and
+subscribe to events.  Given this communication pattern, we developed
+the set of requirments we need in a publish-subscribe mechanism and
+surveyed available options.
+
+As mentioned in section~\ref{sec:design}, we selected Apache Kafka as our pubsub
 component. It is a distributed streaming platform which lets users to publish 
 and subscribe to streams of records. Kafka is run as a cluster on one or more 
 servers. The Kafka cluster stores streams of records in categories called topics.
@@ -122,7 +151,7 @@ period.
 
 \subsection{Mobile network messaging adapter}
 
-The Mercury Adapter follows a multi-threaded, event-driven execution
+The \name Adapter follows a multi-threaded, event-driven execution
 pattern. It is highly modular, with clear separation between client
 state tracking, network-specific address mapping, and transport
 functionality.  This allows new modes of core network communication to
@@ -131,7 +160,7 @@ threads of execution handle pubsub, UDP communication, and scheduled
 tasks (e.g., session checking); all are coordinated through the main
 thread.
 
-Mercury is designed so that any number of Adapters can connect to the
+\name is designed so that any number of Adapters can connect to the
 \pubsub system. Each will send client telemetry reports and pubsub
 messages along. A single broker message sent via pubsub reaches all
 connected Adapters, which filter as necessary. For example, an Adapter
@@ -165,8 +194,8 @@ receiving an explicit CLOSE message from the client.
 UDP unicast packets for all communication between Adapter and Client
 Endpoints. Ideally we would use eMBMS broadcasts for AOI and broadcast
 (e.g. heartbeat) messages, and we plan to do so in future work. Each
-UDP packet is a self-contained Mercury message. The contents are
-encoded using Google's Protocol Buffers~\cite{protocolbuffers} for
+UDP packet is a self-contained \name message. The contents are
+encoded using Google's Protocol Buffers~\cite{buffers2011google} for
 performance and space efficiency. For AOI destination addresses, the
 Adapter calculates the set of clients to transmit a message to and
 unicasts to each individually. For broadcasts, it transmits to all
@@ -177,14 +206,10 @@ intended for the pubsub system are directly published to the indicated
 topic by the Adapter. Likewise, messages received from the Broker via
 pubsub are sent to specific endpoints or broadcast to all clients
 handled by the Adapter (as appropriate).
-
-%\item Trust enforcement
-%
-%  FIXME - Move to ``discussion'' section.
     
 \subsection{Client Endpoint mechanisms}
 
-The Mercury Client Endpoint connects to the Adapter over UDP. It
+The \name Client Endpoint connects to the Adapter over UDP. It
 establishes a session using a simple handshake; an INIT message is
 sent to the adapter, which it replies to with an acknowledgement. The
 client will continue trying to connect until it receives the
@@ -216,7 +241,7 @@ also used between clients and applications for encoding the messages.
 \subsection{Design Goal Alignment}
 
 The remainder of the design section of the paper is dedicated to a
-deeper exploration of the design of Mercury and how it aligns with the
+deeper exploration of the design of \name and how it aligns with the
 afforementioned goals.
 
 \subsubsection{Delivering Relevant Content}

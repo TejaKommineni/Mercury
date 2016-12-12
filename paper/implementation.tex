@@ -1,10 +1,10 @@
 \section{Implementation}
 
 We next briefly cover some of the essential implementation details of
-the Mercury prototype. Section~\ref{sec:design-details} discusses our
+the \name prototype. Section~\ref{sec:design-details} discusses our
 selection of Kafka for the pubsub component. Google's Protocol Buffers
 were used for efficient on-the-wire binary encoding of messages. Such
-encoding is used on all non-pubsub communication paths. The Mercury
+encoding is used on all non-pubsub communication paths. The \name
 prototype was written in python in about 2,200 lines of code. We chose
 Python because it was easy to rapidly produce a working system in this
 high-level langauge, and because it has good support for parallel
@@ -15,7 +15,7 @@ internal scheduler was implemented to perform periodic tasks, and
 supports randomized offsets.
 
 The prototype implementation targets the centralized PGW deployement
-scenario where the core Mercury components (Adapter, Broker, and
+scenario where the core \name components (Adapter, Broker, and
 pubsub) are positioned immediately on the other side of a standard
 3GPP data bearer egress point. This deployement scenario affords low
 latency overhead when EPC core components are located in a datacenter
