@@ -54,25 +54,25 @@ important.
 
 \end{itemize}
 
-We next describe the components of the \name~messaging system, along
+We next describe the components of the \name{} messaging system, along
 with how they fit into the 3GPP 4G mobile networking architecture.
 
 %%% ARCHITECTURE FIGURE
 \begin{figure*}[ht]
   \centering
   \includegraphics[width=0.8\textwidth]{figs/mercury-arch.png}
-  \caption{\name~architecture diagram (in 4G mobile network context)}
+  \caption{\name{} architecture diagram (in 4G mobile network context)}
   \label{fig:arch}
 \end{figure*}
 
-\subsection{\name~Components}
+\subsection{\name{} Components}
 
-\name~is comprised of four essential components: message broker,
+\name{} is comprised of four essential components: message broker,
 publish/subscribe system, message adapter, and endpoints.  These
 components are visible in the architecture diagram in
-figure~\ref{fig:arch}. This diagram shows the \name~components
+figure~\ref{fig:arch}. This diagram shows the \name{} components
 in the context of a 4G mobile network (the latter will be described
-after \name~is covered).
+after \name{} is covered).
 
 \subsubsection{Message Broker}
 
@@ -83,11 +83,11 @@ section~\ref{sec:aoi}) for certain message types (e.g., emergency
 notifications).  Data analysis (aggregated decisions, client
 statistics, etc.) occur at the broker. It does not concern itself with
 how to get the messages to the target endpoint(s); that job falls to
-the \name~message adapter.
+the \name{} message adapter.
 
 \subsubsection{Publish/Subscribe System}
 
-\name~needs a pubsub system that can serve a high number of events
+\name{} needs a pubsub system that can serve a high number of events
 with low latency. This is because of the environment in which it
 operates.  We have many agents/endpoints at any given point that
 interact with the system and for them to effectively respond to a
@@ -105,7 +105,7 @@ failures without losing any records committed to the log.
 
 \subsubsection{Message Adapter}
 
-The \name~message adapter is the conduit through which pubsub
+The \name{} message adapter is the conduit through which pubsub
 messages flow through to endpoints. The adapter coordinates sessions
 with client endpoints. It forwards client reports and other content to
 and from the pubsub. It also maintains pubsub topic subscriptions for
@@ -115,7 +115,7 @@ networking architectures with different adapters.
 
 \subsubsection{Endpoints}
 
-\name~endpoints are the producers and consumers of most content in
+\name{} endpoints are the producers and consumers of most content in
 the messaging system. Client Endpoints run as applications on
 ITS-equipped vehicles.  They report in with telemetry, such as their
 current position and speed.  Client endpoints also subscribe to
@@ -126,7 +126,7 @@ pubsub, running at the same location as the Broker, and using the
 Broker's services. Examples include emergency notification processors,
 and consumer information aggregators (gas prices).
 
-\subsection{\name~Messages}
+\subsection{\name{} Messages}
 
 Messages are the principle and only communication mechanism in
 \name. There are two high-level flavors: control and
@@ -136,7 +136,7 @@ management (endpoint to pubsub/broker).  Content messages are those
 relevant to applications running on endpoints, such as emergency
 alerts and consumer information (e.g. gas prices).  Periodic session
 maintenance messages are sent between the mobile endpoints and the
-\name~Adapter to update status (location) and track liveness.
+\name{} Adapter to update status (location) and track liveness.
 
 %The broker likewise sends periodic
 %heartbeat messages toward all endpoints. These messages ensure clients
@@ -151,7 +151,7 @@ the pubsub system to the broker. This allows the Broker to perform
 data aggregation and analysis (triggers based on thresholds, for
 example).
 
-Message destination addressing in \name~includes endpoint, content,
+Message destination addressing in \name{} includes endpoint, content,
 and area of interest targetting. Endpoint addresses are primarily used
 for session setup and teardown. Content-specific addressing makes use
 of subscription attributes to deliver messages. AOI addresses are
@@ -159,7 +159,7 @@ unique to the mobile environment. AOI bounds are computed by the
 broker. These bounds form the destination address. Message adapters
 check bounds to determine if their downstream area coverage is
 relevant before passing along, and endpoints check their position
-relative to the bounds.  In this way, \name~allows messages to be
+relative to the bounds.  In this way, \name{} allows messages to be
 ``area multicasted.''  As we discuss in
 section~\ref{sec:design-details}, our prototype restricts itself to
 simple bounding models (radius). Complex spatial reasoning for

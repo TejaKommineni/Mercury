@@ -1,7 +1,7 @@
 \section{Evaluation}
 
 We have performed functional and performance (latency) evaluations of
-our \name~prototype.  The components operate functionally as
+our \name{} prototype.  The components operate functionally as
 expected, tracking location and responding to area of interest events
 where they are verified to be in the defined region. Micro-benchmarks
 show that the system can operate down to 10ms RTT from baseline single
@@ -16,7 +16,7 @@ message rates, and push out the maximum processing rate.
 To verify \name, we have written a simulator that mimics real-time
 vehicular movement. The Simulator provides two main
 functionalities. Firstly, to add vehicles to the system. Secondly, to
-emulate an event at a given location. \name~Simulator has been
+emulate an event at a given location. \name{} Simulator has been
 implemented as follows: We define an area with in the co-ordinate
 system in which the vehicles keep moving. This area depends upon the
 number of vehicles a user wants to initialize. Each vehicle is
@@ -57,7 +57,7 @@ as bigger circle in the figure~\ref{fig:aoi}.
 \begin{figure}[ht]
   \begin{center}
     \includegraphics[width=0.5\textwidth]{figs/simulated.png}
-    \caption{\name~event simulation.}
+    \caption{\name{} event simulation.}
     \label{fig:simulated}
   \end{center}
 \end{figure}
@@ -66,7 +66,7 @@ as bigger circle in the figure~\ref{fig:aoi}.
 \begin{figure}[ht]
   \begin{center}
     \includegraphics[width=0.5\textwidth]{figs/aoi.png}
-    \caption{\name~Area Of Interest.}
+    \caption{\name{} Area Of Interest.}
     \label{fig:aoi}
   \end{center}
 \end{figure}
@@ -86,7 +86,7 @@ the event and those vehicles which are out of the AOI did not receive it.
 
 \subsection{Latency Micro-benchmark}
 
-In order to assess the latency response of \name~under load, we
+In order to assess the latency response of \name{} under load, we
 performed a micro-benchmark involving sending messages at
 progressively higher rates, end-to-end. To do this, we developed an
 client-side application, ``echorate'', that sends timestamped messages
@@ -117,7 +117,7 @@ rate of 10 messages/second, the RTT jumps by an order of
 magnitude. The response stays fairly flat at around 1 second through a
 rate of 500 messages/second. Somewhere between this latter rate and
 750 messages/second, the rate begins a linear climb.  This trend is a
-result of the \name~components falling behind in message processing.
+result of the \name{} components falling behind in message processing.
 As the quartile spread indicates at these higher rates, the RTT slowly
 creeps up as message processing continues to lag behind the incoming
 message rate.
@@ -130,7 +130,7 @@ individual components to queue incoming messages.  However, message
 processing and sending is single-threaded.  We believe that the key to
 increasing throughput is to parallelize these tasks. Decreasing the
 RTT baseline message rate can be accomplished by reimplementing
-\name~in a lower-level language where individual processing time
+\name{} in a lower-level language where individual processing time
 contributions are easier to manage and processing overhead is
 generally lower.  Using real-time scheduler directives would likely
 also help. We leave such optimizations as future work.
