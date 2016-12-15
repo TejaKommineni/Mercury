@@ -5,7 +5,7 @@ Each \name{} component runs as a self-contained application. The
 Broker and Adapter(s) communicate over unmodified \pubsub. Client
 Endpoints communicate with the Adapter over UDP. Client-side
 applications using \name{} communicate over the local loopback with
-the Client Endpoint process. Service Endpoints use \pubsub to
+the Client Endpoint process. Service Endpoints use \pubsub{} to
 communicate with the Broker and talk to Clients via
 Adapter(s).
 
@@ -161,7 +161,7 @@ tasks (e.g., session checking); all are coordinated through the main
 thread.
 
 \name{} is designed so that any number of Adapters can connect to the
-\pubsub system. Each will send client telemetry reports and pubsub
+\pubsub{} system. Each will send client telemetry reports and pubsub
 messages along. A single broker message sent via pubsub reaches all
 connected Adapters, which filter as necessary. For example, an Adapter
 will drop messages with Area of Interest destinations that do not
