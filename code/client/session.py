@@ -10,6 +10,8 @@ import mercury_pb2 as mproto
 import sessionmessage as sm
 import areaofinterest as aoi
 import scheduler as sch
+import pubsubmessage as psm
+import appclimessage as acm
 
 class ClientSession:
     DEFAULT_REPORT_INTERVAL = 15
@@ -47,6 +49,15 @@ class ClientSession:
         elif smsg.type == mproto.SessionMsg.HB:
             self.logger.debug("Received heartbeat from adapter")
             self.last_hb = now
+        elif smsg.type == mproto.SessionMsg.ECHO:
+            self.logger.debug("Received echo reply from adapter")
+            msg.type = mproto.MercuryMessage.CLI_APP
+            msg.src_addr.type = mproto.MercuryMessage.CLIENT
+            msg.src_addr.cli_id = int(self.client.cli_id)
+            msg.dst_addr.type = mproto.MercuryMessage.APP
+            app_id = int(acm.get_msg_attr(msg, psm.UTILITY.ATTRIBUTES.APP_ID))
+            msg.dst_addr.app_id = app_id
+            self.client.send_app_message(app_id, msg)
 
     def _mk_init_msg(self):
         msg = mproto.MercuryMessage()

@@ -88,7 +88,8 @@ class AdapterClientTracker:
         typesw = {
             mproto.SessionMsg.INIT:   self.cli_init,
             mproto.SessionMsg.CLOSE:  self.cli_close,
-            mproto.SessionMsg.CLIREP: self.cli_report
+            mproto.SessionMsg.CLIREP: self.cli_report,
+            mproto.SessionMsg.ECHO:   self.cli_echo
         }
         def _bad(msg):
             self.logger.error("Unsupported session type: %s" %
@@ -157,6 +158,20 @@ class AdapterClientTracker:
             self.sessions[cli_id] = sess
             sess.update(msg)
             self.adapter.send_broker_cli_report(cli_id, sess)
+        else:
+            self.send_cli_error(cli_id)
+
+    def cli_echo(self, msg):
+        cli_id = msg.src_addr.cli_id
+        if cli_id in self.sessions:
+            # Log that we received an echo message. Return reply.
+            self.logger.debug("Received echo request from client %d" %
+                              int(cli_id))
+            msg.type = mproto.MercuryMessage.AD_SESS
+            msg.src_addr.type = mproto.MercuryMessage.ADAPTER
+            msg.dst_addr.type = mproto.MercuryMessage.CLIENT
+            msg.dst_addr.cli_id = cli_id
+            self.adapter.send_cli_msg(cli_id, msg.SerializeToString())
         else:
             self.send_cli_error(cli_id)
 

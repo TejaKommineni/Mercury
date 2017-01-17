@@ -21,6 +21,7 @@ class ClientAppInterface(object):
     def process_app_msg(self, msg):
         app_id = msg.src_addr.app_id
         appsw = {
+            mproto.MercuryMessage.APP_CLI: self.handle_appcli,
             mproto.MercuryMessage.CLI_SUBSCR: self.handle_subscribe,
             mproto.MercuryMessage.CLI_UNSUB: self.handle_unsubscribe,
             mproto.MercuryMessage.CLI_PUB: self.handle_pubsub,
@@ -47,7 +48,7 @@ class ClientAppInterface(object):
         else:
             if topic in self.subs:
                 for app_id in self.subs[topic]:
-                    self.client.send_app_message(app_id, msg)                
+                    self.client.send_app_message(app_id, msg)
 
     def handle_subscribe(self, msg):
         app_id = msg.src_addr.app_id
@@ -73,7 +74,30 @@ class ClientAppInterface(object):
                     self.client.pubsub_unsubscribe(topic)
 
     def handle_pubsub(self, msg):
-        app_id = msg.src_addr.app_id
+        app_id = int(msg.src_addr.app_id)
         self.logger.debug("Sending app message to pubsub, app_id: %d",
-                          int(app_id))
+                          app_id)
         self.client.send_pubsub_message(msg)
+
+    def handle_appcli(self, msg):
+        app_id = int(msg.src_addr.app_id)
+        if msg.appcli_msg.type == psm.UTILITY.TYPES.ECHO:
+            self.logger.debug("Responding to app echo request, app_id: %d", 
+                              app_id)
+            msg.type = mproto.MercuryMessage.CLI_APP
+            msg.src_addr.type = mproto.MercuryMessage.CLIENT
+            msg.src_addr.cli_id = int(self.client.cli_id)
+            msg.dst_addr.type = mproto.MercuryMessage.APP
+            msg.dst_addr.app_id = app_id
+            self.client.send_app_message(app_id, msg)
+        elif msg.appcli_msg.type == psm.UTILITY.TYPES.ECHO_ADAPTER:
+            self.logger.debug("Sending echo request toward adapter, app_id: %d", 
+                              app_id)
+            msg.type = mproto.MercuryMessage.CLI_SESS
+            msg.src_addr.type = mproto.MercuryMessage.CLIENT
+            msg.src_addr.cli_id = int(self.client.cli_id)
+            msg.dst_addr.type = mproto.MercuryMessage.ADAPTER
+            msg.session_msg.type = mproto.SessionMsg.ECHO
+            self.client.send_adapter_message(msg.SerializeToString())
+        else:
+            self.logger.warning("Ignoring unknown application message type: %s" % msg.appcli_msg.type)

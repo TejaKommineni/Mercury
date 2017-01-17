@@ -27,10 +27,12 @@ class UTILITY:
 
     class TYPES:
         ECHO = "Echo"
+        ECHO_ADAPTER = "EchoAdapter"
 
     class ATTRIBUTES:
         APP_ID     = "App_ID"
         ECHO_STAMP = "Echo_Stamp"
+        ECHO_DEST  = "Echo_Dest"
 
     TYPELIST = [TYPES.ECHO,]
 
@@ -49,3 +51,4 @@ def add_msg_attr(msg, key, val):
     attr = msg.pubsub_msg.attributes.add()
     attr.key = str(key)
     attr.val = str(val)
+    return attr

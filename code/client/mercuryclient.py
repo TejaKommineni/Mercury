@@ -119,7 +119,8 @@ class MercuryClient:
             self.session.process_adapter_msg(pmsg)
         elif pmsg.type == mproto.MercuryMessage.PUB_CLI:
             self.appi.process_pubsub(pmsg)
-        elif pmsg.type in (mproto.MercuryMessage.CLI_PUB,
+        elif pmsg.type in (mproto.MercuryMessage.APP_CLI,
+                           mproto.MercuryMessage.CLI_PUB,
                            mproto.MercuryMessage.CLI_SUBSCR,
                            mproto.MercuryMessage.CLI_UNSUB):
             app_id = pmsg.src_addr.app_id

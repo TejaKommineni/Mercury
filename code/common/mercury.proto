@@ -15,7 +15,8 @@ message MercuryMessage {
     CLI_SUBSCR = 4;  // Client pubsub subscription request
     CLI_UNSUB  = 5;  // Client pubsub unsubscribe request
     CLI_PUB    = 6;  // Client message to push to pubsub (producer message)
-    APP_CLI    = 7;  // Application to client message
+    CLI_APP    = 7;  // Client to application message.
+    APP_CLI    = 8;  // Application to client message.
   }
   optional MsgType type = 2; // One of the above types
   enum AddrType {
@@ -43,7 +44,7 @@ message MercuryMessage {
   optional Address dst_addr = 4;
   optional SessionMsg session_msg = 5;
   optional PubSubMsg pubsub_msg = 6;
-  optional EnvReport environ_rep = 7;
+  optional AppCliMsg appcli_msg = 7;
 }
 
 message SessionMsg {
@@ -53,6 +54,7 @@ message SessionMsg {
     CLOSE  = 2; // Session close/end messages
     CLIREP = 3; // Client report message
     HB     = 4; // Adapter heartbeat message
+    ECHO   = 5; // Echo request/reply
   }
   optional MsgType type = 2; // One of the above types
   message KeyVal {
@@ -71,10 +73,11 @@ message PubSubMsg {
   repeated KeyVal attributes = 2; // KV pairs from Kafka message
 }
 
-message EnvReport {
+message AppCliMsg {
+  optional string type = 1;
   message KeyVal {
     optional string key = 1;
     optional string val = 2;
   }
-  repeated KeyVal attributes = 2; // KV pairs from Kafka message
+  repeated KeyVal attributes = 2; // KV pairs
 }
