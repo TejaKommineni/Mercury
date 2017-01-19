@@ -7,18 +7,17 @@ from kafka import KafkaConsumer, KafkaProducer, TopicPartition
 
 sys.path.append(os.path.abspath("../common"))
 import eventhandler
-import pubsubmessage as psm
 
-class AdapterPubSubInterface:
+class PubSubInterface:
     EVTYPE = "PubSubEvent"
     
-    def __init__(self):
-        self.logger = logging.getLogger('Mercury.AdapterPubSubInterface')
+    def __init__(self, topic_list):
+        self.logger = logging.getLogger('Mercury.PubSubInterface')
         self.producer = None
         self.consumer_thread = None
         self.topiclist = []
         self.topiclock = threading.Lock()
-        for topic in psm.BROKER_TOPICS.TOPICLIST:
+        for topic in topic_list:
             self._add_topic(topic)
         self.msglist = []
         self.msglock = threading.Lock()
@@ -26,7 +25,6 @@ class AdapterPubSubInterface:
     
     def configure(self, config):
         self.psconfig = config['PubSub']
-        self.config   = config['Adapter']
 
     def _add_topic(self, new_topic):
         self.topiclock.acquire()
@@ -51,7 +49,7 @@ class AdapterPubSubInterface:
         for msg in self.consumer:
             self.logger.debug("Received message from pubsub!")
             self._add_msg(msg)
-            ev = eventhandler.MercuryEvent(AdapterPubSubInterface.EVTYPE)
+            ev = eventhandler.MercuryEvent(PubSubInterface.EVTYPE)
             self.evhandler.fire(ev)
 
     def get_msg(self):

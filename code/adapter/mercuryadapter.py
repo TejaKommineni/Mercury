@@ -11,12 +11,12 @@ import uuid
 import configparser
 
 # Adapter-specific imports
-import psubiface
 import clientsession
 import unicastclient as uc
 
 # Common Mercury code
 sys.path.append(os.path.abspath("../common"))
+import psubiface
 import udpiface
 import eventhandler
 import mercury_pb2 as mproto
@@ -45,7 +45,7 @@ class MercuryAdapter:
         self.logger = None
         self.sched = sch.Scheduler()
         self.evhandler = eventhandler.EventHandler()
-        self.psubi = psubiface.AdapterPubSubInterface()
+        self.psubi = psubiface.PubSubInterface(psm.BROKER_TOPICS.TOPICLIST)
         self.udpi = udpiface.UDPInterface()
         self.clitracker = clientsession.AdapterClientTracker(self)
         self.cliaddrs = {}
@@ -236,7 +236,7 @@ class MercuryAdapter:
                 evswitch = {
                     sch.Scheduler.EVTYPE: lambda x: self.sched.check(),
                     udpiface.UDPInterface.EVTYPE: self.process_udp_msg,
-                    psubiface.AdapterPubSubInterface.EVTYPE: self.process_psub_msg,
+                    psubiface.PubSubInterface.EVTYPE: self.process_psub_msg,
                 }
                 def _bad(ev):
                     self.logger.warning("Unknown event type (ignored): %s" % ev.evtype)
