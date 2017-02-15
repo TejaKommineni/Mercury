@@ -33,6 +33,7 @@ fuuid = str(uuid.uuid4())
 
 timings = array.array('f')
 tsattr = None
+sqattr = None
 
 dest = sys.argv[1]
 count = int(sys.argv[2])
@@ -53,6 +54,7 @@ def _add_appcli_msg_attr(msg, key, val):
 
 def _mk_broker_echo_msg():
     global tsattr
+    global sqattr
     msg = mercury_pb2.MercuryMessage()
     msg.uuid = fuuid
     msg.type = mercury_pb2.MercuryMessage.CLI_PUB
@@ -62,10 +64,12 @@ def _mk_broker_echo_msg():
     msg.pubsub_msg.topic = psm.UTILITY.TYPES.ECHO
     _add_pubsub_msg_attr(msg, psm.UTILITY.ATTRIBUTES.APP_ID, app_id)
     tsattr = _add_pubsub_msg_attr(msg, psm.UTILITY.ATTRIBUTES.ECHO_STAMP, 0)
+    sqattr = _add_pubsub_msg_attr(msg, "Seq_Num", 0)
     return msg
 
 def _mk_client_echo_msg():
     global tsattr
+    global sqattr
     msg = mercury_pb2.MercuryMessage()
     msg.uuid = fuuid
     msg.type = mercury_pb2.MercuryMessage.APP_CLI
@@ -75,10 +79,12 @@ def _mk_client_echo_msg():
     msg.appcli_msg.type = psm.UTILITY.TYPES.ECHO
     _add_appcli_msg_attr(msg, psm.UTILITY.ATTRIBUTES.APP_ID, app_id)
     tsattr = _add_appcli_msg_attr(msg, psm.UTILITY.ATTRIBUTES.ECHO_STAMP, 0)
+    sqattr = _add_appcli_msg_attr(msg, "Seq_Num", 0)
     return msg
 
 def _mk_adapter_echo_msg():
     global tsattr
+    global sqattr
     msg = mercury_pb2.MercuryMessage()
     msg.uuid = fuuid
     msg.type = mercury_pb2.MercuryMessage.APP_CLI
@@ -88,10 +94,14 @@ def _mk_adapter_echo_msg():
     msg.appcli_msg.type = psm.UTILITY.TYPES.ECHO_ADAPTER
     _add_appcli_msg_attr(msg, psm.UTILITY.ATTRIBUTES.APP_ID, app_id)
     tsattr = _add_appcli_msg_attr(msg, psm.UTILITY.ATTRIBUTES.ECHO_STAMP, 0)
+    sqattr = _add_appcli_msg_attr(msg, "Seq_Num", 0)
     return msg
 
 def _update_echo_tstamp(val):
     tsattr.val = repr(val)
+
+def _update_echo_seqno(val):
+    sqattr.val = repr(val)
 
 def process_incoming():
     inmsg = mercury_pb2.MercuryMessage()
@@ -125,11 +135,13 @@ else:
     print "Unknown destination: %s" % dest
     sys.exit(1)
 
-while count > 0:
+ctr = 0
+while ctr < count:
     _update_echo_tstamp(time.time())
+    _update_echo_seqno(ctr)
     s.sendto(outmsg.SerializeToString(), (host, port))
     time.sleep(pgap)
-    count -= 1
+    ctr += 1
 
 print "Waiting a bit for final echo replies to arrive."
 time.sleep(5)

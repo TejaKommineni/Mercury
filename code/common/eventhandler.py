@@ -13,12 +13,16 @@ class EventHandler:
             self.evlock = threading.Lock()
             self.ev = threading.Event()
             self.evlist = []
+            self.callback = None
 
         def fire(self, adevent):
-            self.evlock.acquire()
-            self.evlist.append(adevent)
-            self.evlock.release()
-            self.ev.set()
+            if self.callback:
+                self.callback(adevent)
+            else:
+                self.evlock.acquire()
+                self.evlist.append(adevent)
+                self.evlock.release()
+                self.ev.set()
 
         def wait(self, timeout = None):
             rv = self.ev.wait(timeout)
@@ -32,10 +36,15 @@ class EventHandler:
             return rval
 
         def pop(self):
+            rval = None
             self.evlock.acquire()
-            rval = self.evlist.pop(0)
+            if len(self.evlist):
+                rval = self.evlist.pop(0)
             self.evlock.release()
             return rval
+
+        def setcallback(self, cfunc):
+            self.callback = cfunc
 
     instance = None
 

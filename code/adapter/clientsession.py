@@ -5,6 +5,8 @@ import uuid
 import time
 import random
 import logging
+import copy
+import threading
 
 sys.path.append(os.path.abspath("../common"))
 import sessionmessage as sm
@@ -30,6 +32,55 @@ class ClientSession:
         self.y_location = sm.get_msg_attr(msg, sm.CLIREP.Y_LOC)
         self.direction = sm.get_msg_attr(msg, sm.CLIREP.DIRECTION)
         self.speed = sm.get_msg_attr(msg, sm.CLIREP.SPEED)
+
+class ClientSessions:
+    def __init__(self):
+        self.sessions = {}
+        self.lock = threading.Lock()
+
+    def add(self, cli_id, sess):
+        self.lock.acquire()
+        self.sessions[cli_id] = sess
+        self.lock.release()
+
+    def delete(self, cli_id):
+        self.lock.acquire()
+        del self.sessions[cli_id]
+        self.lock.release()
+
+    def lookup(self, cli_id):
+        sess = None
+        self.lock.acquire()
+        if cli_id in self.sessions:
+            sess = self.sessions[cli_id]
+        self.lock.release()
+        return sess
+
+    def update(self, cli_id, msg, dummy = False):
+        sess = None
+        self.lock.acquire()
+        if not cli_id in self.sessions:
+            sess = ClientSession(cli_id, dummy = dummy)
+            self.sessions[cli_id] = sess
+        else:
+            sess = self.sessions[cli_id]
+        sess.update(msg)
+        self.lock.release()
+        return sess
+
+    def ticksession(self, cli_id):
+        self.lock.acquire()
+        if cli_id in self.sessions:
+            sess = self.sessions[cli_id]
+            sess.last_msg = time.time()
+            sess.msg_count += 1
+        self.lock.release()
+
+    def getall(self):
+        self.lock.acquire()
+        rval = copy.deepcopy(self.sessions.values())
+        self.lock.release()
+        return rval
         
 class AdapterClientTracker:
     CLIENT_TIMEOUT = 120
@@ -38,7 +89,7 @@ class AdapterClientTracker:
 
     def __init__(self, adapter):
         self.logger = logging.getLogger('Mercury.AdapterClientTracker')
-        self.sessions = {}
+        self.sessions = ClientSessions()
         self.adapter = adapter
         self.heartbeat_interval = AdapterClientTracker.HEARTBEAT_INTERVAL
         self.check_interval = AdapterClientTracker.CHECK_INTERVAL
@@ -62,11 +113,11 @@ class AdapterClientTracker:
         
     def check_clients(self, now):
         self.logger.debug("Checking for stale clients")
-        for sess in self.sessions.values():
+        for sess in self.sessions.getall():
             if sess.last_msg + self.client_timeout < now:
                 self.logger.debug("Deleting session for idle client: %d" % int(sess.cli_id))
-                self.adapter.delete_cliaddr(sess.cli_id)
-                del self.sessions[sess.cli_id]
+                self.adapter.cliaddrs.delete(sess.cli_id)
+                self.sessions.delete(sess.cli_id)
 
     def send_heartbeat(self, now):
         self.logger.debug("Sending heartbeat to clients")
@@ -75,13 +126,11 @@ class AdapterClientTracker:
 
     def check_session(self, msg):
         cli_id = msg.src_addr.cli_id
-        if not cli_id in self.sessions:
+        if not self.sessions.lookup(cli_id):
             self.send_cli_error(cli_id)
             return False
         else:
-            sess = self.sessions[cli_id]
-            sess.last_msg = time.time()
-            sess.msg_count += 1
+            self.sessions.ticksession(cli_id)
             return True
                 
     def process_sess_mesg(self, msg, dummy = 0):
@@ -110,17 +159,10 @@ class AdapterClientTracker:
         return msg
         
     def cli_init(self, msg):
-        sess = None
         cli_id = msg.src_addr.cli_id
         self.logger.info("Session initiated for client %d" %
                          int(cli_id))
-        if cli_id in self.sessions:
-            # Client is reinitializing, but we still have state.
-            sess = self.sessions[cli_id]
-        else:
-            sess = ClientSession(cli_id)
-            self.sessions[cli_id] = sess
-        sess.update(msg)
+        sess = self.sessions.update(cli_id, msg)
         retmsg = self._mk_adapter_cli_sess_msg(cli_id, sess.id,
                                                mproto.SessionMsg.INIT)
         sm.add_msg_attr(retmsg, sm.INIT.RESPONSE, sm.RV.SUCCESS)
@@ -128,42 +170,37 @@ class AdapterClientTracker:
         self.adapter.send_broker_cli_report(cli_id, sess)
 
     def cli_close(self, msg):
-        sess = None
         cli_id = msg.src_addr.cli_id
-        if cli_id in self.sessions:
-            sess = self.sessions[cli_id]
+        sess = self.sessions.lookup(sess)
+        if sess:
             sess.msg_count += 1
             self.logger.info("Closing session for client %d. Total messages: %d"
                 % (int(cli_id), sess.msg_count))
-            del self.sessions[msg.cli_id]
+            self.sessions.delete(cli_id)
         else:
             self.logger.warning("Close received with no session. Client: %d" %
                                 int(cli_id))
 
     def cli_report(self, msg):
-        sess = None
         cli_id = msg.src_addr.cli_id
-        if cli_id in self.sessions:
+        if self.sessions.lookup(cli_id):
             # Log that we received a message.  Send along to broker.
             self.logger.debug("Received report from client %d" %
                               int(cli_id))
-            sess = self.sessions[cli_id]
-            sess.update(msg)
+            sess = self.sessions.update(cli_id, msg)
             self.adapter.send_broker_cli_report(cli_id, sess)
         elif msg.type == mproto.MercuryMessage.APP_CLI:
             # Dummy passthru session for simulations.
             self.logger.debug("Creating session for dummy client: %d" %
                               int(cli_id))
-            sess = ClientSession(cli_id, dummy = True)
-            self.sessions[cli_id] = sess
-            sess.update(msg)
+            sess = self.sessions.update(cli_id, dummy = True)
             self.adapter.send_broker_cli_report(cli_id, sess)
         else:
             self.send_cli_error(cli_id)
 
     def cli_echo(self, msg):
         cli_id = msg.src_addr.cli_id
-        if cli_id in self.sessions:
+        if self.sessions.lookup(cli_id):
             # Log that we received an echo message. Return reply.
             self.logger.debug("Received echo request from client %d" %
                               int(cli_id))
@@ -184,7 +221,7 @@ class AdapterClientTracker:
 
     def get_clients_in_aoi(self, aoi):
         clist = []
-        for sess in self.sessions.values():
+        for sess in self.sessions.getall():
             if aoi.in_aoi(sess.x_location, sess.y_location):
                 clist.append(sess.cli_id)
         return clist

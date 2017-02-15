@@ -61,4 +61,5 @@ class PubSubInterface:
         return msg
 
     def send_msg(self, topic, msg):
+        self.logger.debug("psubi send_msg")
         self.producer.send(topic, msg.encode())
