@@ -12,6 +12,8 @@ Mercury is an end-to-end messaging system with that is aimed at providing
 this conduit. It is designed to flexibly integrate into the mobile network 
 environment under which it is deployed.
 
+![Mercury Architecture](https://github.com/TejaKommineni/Mercury/blob/master/paper/figs/mercury-arch.png)
+
 Mercury is comprised of four essential components: message broker,
 publish/subscribe system, message adapter, and endpoints.
 
